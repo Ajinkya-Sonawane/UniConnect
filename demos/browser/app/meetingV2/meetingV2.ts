@@ -113,6 +113,11 @@ declare global {
   }
 }
 
+// let params = {
+//   loginFlow: true,
+//   registerFlow: false
+// }
+
 // Support a set of query parameters to allow for testing pre-release versions of
 // Amazon Voice Focus. If none of these parameters are supplied, the SDK default
 // values will be used.
@@ -400,24 +405,40 @@ export class DemoMeetingApp
       return;
     }
 
-    (document.getElementById('sdk-version') as HTMLSpanElement).innerText =
+    // this.switchToFlow("flow-login")
+    // if (document.cookie == ""){
+    // }
+    // else{
+      (document.getElementById('sdk-version') as HTMLSpanElement).innerText =
       'amazon-chime-sdk-js@' + Versioning.sdkVersion;
-    this.initEventListeners();
-    this.initParameters();
+      this.initEventListeners();
+      this.initParameters();
+
+      // console.log(params.loginFlow);
+      // if(params.loginFlow){
+        this.switchToFlow("flow-login");
+      // }
+      // else if(params.registerFlow){
+        // this.switchToFlow("flow-register");
+      // }
+
+      // this.switchToFlow("flow-login");
     // this.setMediaRegion();
-    if (this.isRecorder() || this.isBroadcaster()) {
-      AsyncScheduler.nextTick(async () => {
-        this.meeting = new URL(window.location.href).searchParams.get('m');
-        this.name = this.isRecorder() ? '«Meeting Recorder»' : '«Meeting Broadcaster»';
-        await this.authenticate();
-        await this.openAudioOutputFromSelection();
-        await this.join();
-        this.displayButtonStates();
-        this.switchToFlow('flow-meeting');
-      });
-    } else {
-      this.switchToFlow('flow-authenticate');
-    }
+    // if (this.isRecorder() || this.isBroadcaster()) {
+    //   AsyncScheduler.nextTick(async () => {
+    //     this.meeting = new URL(window.location.href).searchParams.get('m');
+    //     this.name = this.isRecorder() ? '«Meeting Recorder»' : '«Meeting Broadcaster»';
+    //     await this.authenticate();
+    //     await this.openAudioOutputFromSelection();
+    //     await this.join();
+    //     this.displayButtonStates();
+    //     this.switchToFlow('flow-meeting');
+    //   });
+    // } else {
+    //   this.switchToFlow('flow-authenticate');
+    // }
+
+    // }
   }
 
   /**
@@ -545,6 +566,18 @@ export class DemoMeetingApp
     if (!this.defaultBrowserBehavior.hasChromiumWebRTC()) {
       // (document.getElementById('simulcast') as HTMLInputElement).disabled = true;
     }
+
+    document.getElementById("registerButton").addEventListener("click",(e)=>{
+      e.preventDefault();
+      // params.loginFlow = false;
+      this.switchToFlow("flow-register");
+    });
+
+    document.getElementById("loginButton").addEventListener("click",(e)=>{
+      e.preventDefault();
+      // params.loginFlow = false;
+      this.switchToFlow("flow-login");
+    });
 
     // if (!this.defaultBrowserBehavior.supportDownlinkBandwidthEstimation()) {
     //   (document.getElementById('priority-downlink-policy') as HTMLInputElement).disabled = true;
@@ -3449,6 +3482,14 @@ export class DemoMeetingApp
   //   document.getElementById('dropdown-item-content-share-file-item').style.display = enabled ? 'none' : 'block';
   //   document.getElementById('dropdown-item-content-share-stop').style.display = enabled ? 'block' : 'none';
   // }
+
+  isLogin(): boolean {
+    return new URL(window.location.href).searchParams.get('login') === 'true';
+  }
+
+  isRegister(): boolean {
+    return new URL(window.location.href).searchParams.get('register') === 'true';
+  }
 
   isRecorder(): boolean {
     return new URL(window.location.href).searchParams.get('record') === 'true';

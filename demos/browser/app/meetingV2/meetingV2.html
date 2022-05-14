@@ -67,7 +67,7 @@
             
               <!-- Register buttons -->
               <div class="text-center">
-                <p>Not a member? <a href="./signup.html">Register</a></p>
+                <p>Not a member? <button class="btn btn-primary btn-block" id="registerButton">Register</button></p>
                 </button>
               </div>
             </form>
@@ -76,7 +76,57 @@
       </div> 
     </div>
   </div>
-</div> 
+</div>
+
+<!-- Register new user flow -->
+<div id="flow-register" class="flow text-center">
+
+  <div class="container loginBox">
+    <div class="row">
+      <div class="col-md-4 offset-md-4 ">
+        <div class="card bg-dark">
+          <div class="card-body">
+            <h5 class="card-title">Sign Up</h5><br>
+            <form >
+              <!-- 2 column grid layout with text inputs for the first and last names -->
+              <div class="row mb-4">
+                <div class="col">
+                  <div class="form-outline">
+                    <p>Name : </p>
+                    <input type="text" id="name" class="form-control" />
+                    <!-- <label class="form-label" for="form3Example1">First name</label> -->
+                  </div>
+                </div>
+              </div>
+            
+              <!-- Email input -->
+              <div class="form-outline mb-4">
+                <p>Email : </p>
+                <input type="email" id="email" class="form-control" />
+                <!-- <label class="form-label" for="form3Example3">Email address</label> -->
+              </div>
+            
+              <!-- Password input -->
+              <div class="form-outline mb-4">
+                <p>Password : </p>
+                <input type="password" id="password" class="form-control" />
+                <!-- <label class="form-label" for="form3Example4">Password</label> -->
+              </div>
+            
+              <br>
+              <!-- Submit button -->
+              <button type="submit" class="btn btn-primary btn-block mb-4" id="signup" >Sign up</button>
+              <div class="d-flex justify-content-center mb-4">
+                  <p>Go back to <button class="btn btn-primary btn-block" id="loginButton">Go Back</button></p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div> 
+    </div>
+  </div>
+
+</div>
 
 <!-- Initial meeting authentication screen with meeting and name inputs -->
 <div id="flow-authenticate" class="flow text-center p-2">
@@ -713,4 +763,90 @@
   </div>
 </div>
 </body>
+
+<script>
+  document.getElementById("signIn").addEventListener("click",signIn)
+  document.getElementById("forgotPassword").addEventListener("click",forgotPassword)
+
+  function redirectMainPage(){
+    window.location.href = "index.html"
+  }
+  function signIn(e){
+    e.preventDefault();
+
+    let authenticationData = {
+      Username: document.getElementById("email").value,
+      Password : document.getElementById("password").value
+    }
+    
+    let authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData)
+    poolData = {
+          UserPoolId: config.cognito.userPoolId,
+          ClientId: config.cognito.clientID 
+    }
+
+    let userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+    let userData = {
+      Username: document.getElementById("email").value,
+      Pool: userPool
+    }
+
+    let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+    cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+    cognitoUser.authenticateUser(authenticationDetails, {
+        onSuccess: function (result) {
+            var accessToken = result.getAccessToken().getJwtToken();
+
+            /* Use the idToken for Logins Map when Federating User Pools with identity pools or when passing through an Authorization Header to an API Gateway Authorizer */
+            var idToken = result.idToken.jwtToken;
+            console.log(accessToken)
+            console.log(cognitoUser)
+            var d=new Date()
+            d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
+            var x = "email="+document.getElementById("email").value+"; expires="+d.toGMTString();
+            console.log(x);
+            document.cookie= x;
+            console.log(document.cookie)
+            redirectMainPage()
+        },
+
+        onFailure: function(err) {
+            alert(err);
+        },
+    });
+  }
+
+  function forgotPassword(e){
+    e.preventDefault()
+    poolData = {
+          UserPoolId: config.cognito.userPoolId,
+          ClientId: config.cognito.clientID 
+    }
+    let userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+    let userData = {
+      Username: document.getElementById("email").value,
+      Pool: userPool
+    }
+    let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+    cognitoUser.forgotPassword({
+      onSuccess: function(result){
+        console.log('call result :' + result);
+      },
+      onFailure: function(err){
+        console.log(err);
+        alert(err);
+      },
+      inputVerificationCode(){
+        let verificationCode = prompt('Please input verification code','');
+        let newPassword = prompt('Enter new password','');
+        cognitoUser.confirmPassword(verificationCode,newPassword,this)
+      }
+    })
+
+  }
+</script>
+
 </html>
