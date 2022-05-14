@@ -1,5 +1,5 @@
 import './styleV2.scss';
-import { Attendee, AudioInputDevice, AudioVideoFacade, AudioVideoObserver, BackgroundBlurProcessor, BackgroundBlurVideoFrameProcessorObserver, BackgroundReplacementProcessor, BackgroundReplacementVideoFrameProcessorObserver, BackgroundReplacementOptions, ClientMetricReport, ContentShareObserver, DataMessage, DefaultBrowserBehavior, DefaultDeviceController, DefaultVideoTransformDevice, DeviceChangeObserver, EventAttributes, EventName, EventReporter, LogLevel, Logger, MeetingSession, MeetingSessionConfiguration, MeetingSessionStatus, MeetingSessionVideoAvailability, RemovableAnalyserNode, SimulcastLayers, TranscriptEvent, TranscriptionStatus, TranscriptResult, VideoDownlinkObserver, VideoPriorityBasedPolicy, VideoPriorityBasedPolicyConfig, VoiceFocusDeviceTransformer, VoiceFocusTransformDevice, MeetingSessionCredentials, POSTLogger } from 'amazon-chime-sdk-js';
+import { Attendee, AudioInputDevice, AudioVideoFacade, AudioVideoObserver, BackgroundBlurProcessor, BackgroundBlurVideoFrameProcessorObserver, BackgroundReplacementProcessor, BackgroundReplacementVideoFrameProcessorObserver, BackgroundReplacementOptions, ClientMetricReport, DataMessage, DefaultBrowserBehavior, DefaultDeviceController, DefaultVideoTransformDevice, DeviceChangeObserver, EventAttributes, EventName, EventReporter, LogLevel, Logger, MeetingSession, MeetingSessionConfiguration, MeetingSessionStatus, MeetingSessionVideoAvailability, RemovableAnalyserNode, SimulcastLayers, TranscriptEvent, TranscriptionStatus, TranscriptResult, VideoDownlinkObserver, VideoPriorityBasedPolicy, VideoPriorityBasedPolicyConfig, VoiceFocusDeviceTransformer, VoiceFocusTransformDevice, MeetingSessionCredentials, POSTLogger } from 'amazon-chime-sdk-js';
 import VideoTileCollection from './video/VideoTileCollection';
 import VideoPreferenceManager from './video/VideoPreferenceManager';
 export declare let fatal: (e: Error) => void;
@@ -25,7 +25,7 @@ interface TranscriptSegment {
     startTimeMs: number;
     endTimeMs: number;
 }
-export declare class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver, ContentShareObserver, VideoDownlinkObserver {
+export declare class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver, /*ContentShareObserver,*/ VideoDownlinkObserver {
     static readonly DID: string;
     static readonly BASE_URL: string;
     static testVideo: string;
@@ -240,10 +240,6 @@ export declare class DemoMeetingApp implements AudioVideoObserver, DeviceChangeO
     private videoFilterToProcessor;
     private videoInputSelectionWithOptionalFilter;
     private videoInputSelectionToDevice;
-    private playToStream;
-    private contentShareStart;
-    private contentShareStop;
-    private updateContentShareDropdown;
     isRecorder(): boolean;
     isBroadcaster(): boolean;
     isAbortingOnReconnect(): boolean;
@@ -260,10 +256,6 @@ export declare class DemoMeetingApp implements AudioVideoObserver, DeviceChangeO
     connectionDidSuggestStopVideo(): void;
     connectionDidBecomeGood(): void;
     videoSendDidBecomeUnavailable(): void;
-    contentShareDidStart(): void;
-    contentShareDidStop(): void;
-    contentShareDidPause(): void;
-    contentShareDidUnpause(): void;
     encodingSimulcastLayersDidChange(simulcastLayers: SimulcastLayers): void;
     tileWillBePausedByDownlinkPolicy(tileId: number): void;
     tileWillBeUnpausedByDownlinkPolicy(tileId: number): void;

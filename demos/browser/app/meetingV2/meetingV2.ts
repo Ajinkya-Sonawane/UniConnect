@@ -20,10 +20,10 @@ import {
   BackgroundReplacementOptions,
   ClientMetricReport,
   ConsoleLogger,
-  ContentShareObserver,
+  //ContentShareObserver,
   DataMessage,
   DefaultActiveSpeakerPolicy,
-  DefaultAudioVideoController,
+  //DefaultAudioVideoController,
   DefaultBrowserBehavior,
   DefaultDeviceController,
   DefaultMeetingEventReporter,
@@ -223,7 +223,7 @@ interface TranscriptionStreamParams {
 }
 
 export class DemoMeetingApp
-  implements AudioVideoObserver, DeviceChangeObserver, ContentShareObserver, VideoDownlinkObserver {
+  implements AudioVideoObserver, DeviceChangeObserver, /*ContentShareObserver,*/ VideoDownlinkObserver {
   static readonly DID: string = '+17035550122';
   static readonly BASE_URL: string = [
     location.protocol,
@@ -282,13 +282,13 @@ export class DemoMeetingApp
     'button-microphone': 'on',
     'button-camera': 'off',
     'button-speaker': 'on',
-    'button-content-share': 'off',
-    'button-pause-content-share': 'off',
+    //'button-content-share': 'off',
+    //'button-pause-content-share': 'off',
     'button-live-transcription': 'off',
-    'button-video-stats': 'off',
+    // 'button-video-stats': 'off',
     'button-promote-to-primary': 'off',
-    'button-video-filter': 'off',
-    'button-record-self': 'off',
+    //'button-video-filter': 'off',
+    // 'button-record-self': 'off',
     'button-record-cloud': 'off',
   };
 
@@ -952,61 +952,61 @@ export class DemoMeetingApp
       }
     });
 
-    const buttonRecordSelf = document.getElementById('button-record-self');
-    let recorder: MediaRecorder;
-    buttonRecordSelf.addEventListener('click', _e => {
-      const chunks: Blob[] = [];
-      AsyncScheduler.nextTick(async () => {
-        this.toggleButton('button-record-self');
-        if (!this.isButtonOn('button-record-self')) {
-          console.info('Stopping recorder ', recorder);
-          recorder.stop();
-          recorder = undefined;
-          return;
-        }
+    // const buttonRecordSelf = document.getElementById('button-record-self');
+    // let recorder: MediaRecorder;
+    // buttonRecordSelf.addEventListener('click', _e => {
+    //   const chunks: Blob[] = [];
+    //   AsyncScheduler.nextTick(async () => {
+    //     this.toggleButton('button-record-self');
+    //     if (!this.isButtonOn('button-record-self')) {
+    //       console.info('Stopping recorder ', recorder);
+    //       recorder.stop();
+    //       recorder = undefined;
+    //       return;
+    //     }
 
-        // Combine the audio and video streams.
-        const mixed = new MediaStream();
+    //     // Combine the audio and video streams.
+    //     const mixed = new MediaStream();
 
-        const localTile = this.audioVideo.getLocalVideoTile();
-        if (localTile) {
-          mixed.addTrack(localTile.state().boundVideoStream.getVideoTracks()[0]);
-        }
+    //     const localTile = this.audioVideo.getLocalVideoTile();
+    //     if (localTile) {
+    //       mixed.addTrack(localTile.state().boundVideoStream.getVideoTracks()[0]);
+    //     }
 
-        // We need to get access to the media stream broker, which requires knowing
-        // the exact implementation. Sorry!
-        /* @ts-ignore */
-        const av: DefaultAudioVideoController = this.audioVideo.audioVideoController;
-        const input = await av.mediaStreamBroker.acquireAudioInputStream();
-        mixed.addTrack(input.getAudioTracks()[0]);
+    //     // We need to get access to the media stream broker, which requires knowing
+    //     // the exact implementation. Sorry!
+    //     /* @ts-ignore */
+    //     const av: DefaultAudioVideoController = this.audioVideo.audioVideoController;
+    //     const input = await av.mediaStreamBroker.acquireAudioInputStream();
+    //     mixed.addTrack(input.getAudioTracks()[0]);
 
-        recorder = new MediaRecorder(mixed, { mimeType: 'video/webm; codecs=vp9' });
-        console.info('Setting recorder to', recorder);
-        recorder.ondataavailable = (event) => {
-          if (event.data.size) {
-            chunks.push(event.data);
-          }
-        };
+    //     recorder = new MediaRecorder(mixed, { mimeType: 'video/webm; codecs=vp9' });
+    //     console.info('Setting recorder to', recorder);
+    //     recorder.ondataavailable = (event) => {
+    //       if (event.data.size) {
+    //         chunks.push(event.data);
+    //       }
+    //     };
 
-        recorder.onstop = () => {
-          const blob = new Blob(chunks, {
-            type: 'video/webm',
-          });
-          chunks.length = 0;
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          document.body.appendChild(a);
-          /* @ts-ignore */
-          a.style = 'display: none';
-          a.href = url;
-          a.download = 'recording.webm';
-          a.click();
-          window.URL.revokeObjectURL(url);
-        };
+    //     recorder.onstop = () => {
+    //       const blob = new Blob(chunks, {
+    //         type: 'video/webm',
+    //       });
+    //       chunks.length = 0;
+    //       const url = URL.createObjectURL(blob);
+    //       const a = document.createElement('a');
+    //       document.body.appendChild(a);
+    //       /* @ts-ignore */
+    //       a.style = 'display: none';
+    //       a.href = url;
+    //       a.download = 'recording.webm';
+    //       a.click();
+    //       window.URL.revokeObjectURL(url);
+    //     };
 
-        recorder.start();
-      });
-    });
+    //     recorder.start();
+    //   });
+    // });
 
     const buttonVideo = document.getElementById('button-camera');
     buttonVideo.addEventListener('click', _e => {
@@ -1032,39 +1032,39 @@ export class DemoMeetingApp
       });
     });
 
-    const buttonPauseContentShare = document.getElementById('button-pause-content-share');
-    buttonPauseContentShare.addEventListener('click', _e => {
-      if (!this.isButtonOn('button-content-share')) {
-        return;
-      }
-      AsyncScheduler.nextTick(async () => {
-        this.toggleButton('button-pause-content-share');
-        if (this.isButtonOn('button-pause-content-share')) {
-          this.audioVideo.pauseContentShare();
-          if (this.contentShareType === ContentShareType.VideoFile) {
-            const videoFile = document.getElementById('content-share-video') as HTMLVideoElement;
-            videoFile.pause();
-          }
-        } else {
-          this.audioVideo.unpauseContentShare();
-          if (this.contentShareType === ContentShareType.VideoFile) {
-            const videoFile = document.getElementById('content-share-video') as HTMLVideoElement;
-            await videoFile.play();
-          }
-        }
-      });
-    });
+    // const buttonPauseContentShare = document.getElementById('button-pause-content-share');
+    // buttonPauseContentShare.addEventListener('click', _e => {
+    //   if (!this.isButtonOn('button-content-share')) {
+    //     return;
+    //   }
+    //   AsyncScheduler.nextTick(async () => {
+    //     this.toggleButton('button-pause-content-share');
+    //     if (this.isButtonOn('button-pause-content-share')) {
+    //       this.audioVideo.pauseContentShare();
+    //       if (this.contentShareType === ContentShareType.VideoFile) {
+    //         const videoFile = document.getElementById('content-share-video') as HTMLVideoElement;
+    //         videoFile.pause();
+    //       }
+    //     } else {
+    //       this.audioVideo.unpauseContentShare();
+    //       if (this.contentShareType === ContentShareType.VideoFile) {
+    //         const videoFile = document.getElementById('content-share-video') as HTMLVideoElement;
+    //         await videoFile.play();
+    //       }
+    //     }
+    //   });
+    // });
 
-    const buttonContentShare = document.getElementById('button-content-share');
-    buttonContentShare.addEventListener('click', _e => {
-      AsyncScheduler.nextTick(() => {
-        if (!this.isButtonOn('button-content-share')) {
-          this.contentShareStart();
-        } else {
-          this.contentShareStop();
-        }
-      });
-    });
+    // const buttonContentShare = document.getElementById('button-content-share');
+    // buttonContentShare.addEventListener('click', _e => {
+    //   AsyncScheduler.nextTick(() => {
+    //     if (!this.isButtonOn('button-content-share')) {
+    //       this.contentShareStart();
+    //     } else {
+    //       this.contentShareStop();
+    //     }
+    //   });
+    // });
 
     const buttonSpeaker = document.getElementById('button-speaker');
     buttonSpeaker.addEventListener('click', _e => {
@@ -1304,15 +1304,15 @@ export class DemoMeetingApp
       document.getElementById('live-transcription-modal').style.display = 'none';
     };
 
-    const buttonVideoStats = document.getElementById('button-video-stats');
-    buttonVideoStats.addEventListener('click', () => {
-      if (this.isButtonOn('button-video-stats')) {
-        document.querySelectorAll('.stats-info').forEach(e => e.remove());
-      } else {
-        this.getRelayProtocol();
-      }
-      this.toggleButton('button-video-stats');
-    });
+    // const buttonVideoStats = document.getElementById('button-video-stats');
+    // buttonVideoStats.addEventListener('click', () => {
+    //   if (this.isButtonOn('button-video-stats')) {
+    //     document.querySelectorAll('.stats-info').forEach(e => e.remove());
+    //   } else {
+    //     this.getRelayProtocol();
+    //   }
+    //   this.toggleButton('button-video-stats');
+    // });
 
     const buttonPromoteToPrimary = document.getElementById('button-promote-to-primary');
     buttonPromoteToPrimary.addEventListener('click', async () => {
@@ -1501,7 +1501,7 @@ export class DemoMeetingApp
 
   updateUXForViewOnlyMode() {
     for (const button in this.buttonStates) {
-      if (button === 'button-speaker' || button === 'button-video-stats' || button === 'button-live-transcription') {
+      if (button === 'button-speaker' /*|| button === 'button-video-stats'*/ || button === 'button-live-transcription') {
         continue;
       }
       this.toggleButton(button, 'disabled');
@@ -1516,7 +1516,7 @@ export class DemoMeetingApp
 
     // Enable/disable buttons as appropriate
     for (const button in this.buttonStates) {
-      if (button === 'button-speaker' || button === 'button-video-stats' || button === 'button-live-transcription') {
+      if (button === 'button-speaker' /*|| button === 'button-video-stats' */|| button === 'button-live-transcription') {
         continue;
       }
 
@@ -1663,7 +1663,7 @@ export class DemoMeetingApp
     this.displayEstimatedUplinkBandwidth(metricReport.availableOutgoingBitrate);
     this.displayEstimatedDownlinkBandwidth(metricReport.availableIncomingBitrate);
 
-    this.isButtonOn('button-video-stats') && this.videoTileCollection.showVideoWebRTCStats(this.videoMetricReport);
+    // this.isButtonOn('button-video-stats') && this.videoTileCollection.showVideoWebRTCStats(this.videoMetricReport);
   }
 
   displayEstimatedUplinkBandwidth(bitrate: number) {
@@ -1840,7 +1840,7 @@ export class DemoMeetingApp
     this.setupLiveTranscription();
     this.audioVideo.addObserver(this);
     this.meetingSession.eventController.addObserver(this);
-    this.audioVideo.addContentShareObserver(this);
+    //this.audioVideo.addContentShareObserver(this);
 
     this.videoTileCollection = new VideoTileCollection(this.audioVideo,
       this.meetingLogger,
@@ -1984,24 +1984,24 @@ export class DemoMeetingApp
       const isContentAttendee = new DefaultModality(attendeeId).hasModality(
         DefaultModality.MODALITY_CONTENT
       );
-      const isSelfAttendee =
-        new DefaultModality(attendeeId).base() === this.meetingSession.configuration.credentials.attendeeId
-        || new DefaultModality(attendeeId).base() === this.primaryMeetingSessionCredentials?.attendeeId
-      if (!present) {
-        delete this.roster[attendeeId];
-        this.updateRoster();
-        this.log(`${attendeeId} dropped = ${dropped} (${externalUserId})`);
-        return;
-      }
+      // const isSelfAttendee =
+      //   new DefaultModality(attendeeId).base() === this.meetingSession.configuration.credentials.attendeeId
+      //   || new DefaultModality(attendeeId).base() === this.primaryMeetingSessionCredentials?.attendeeId
+      // if (!present) {
+      //   delete this.roster[attendeeId];
+      //   this.updateRoster();
+      //   this.log(`${attendeeId} dropped = ${dropped} (${externalUserId})`);
+      //   return;
+      // }
       //If someone else share content, stop the current content share
-      if (
-        !this.allowMaxContentShare() &&
-        !isSelfAttendee &&
-        isContentAttendee &&
-        this.isButtonOn('button-content-share')
-      ) {
-        this.contentShareStop();
-      }
+      // if (
+      //   !this.allowMaxContentShare() &&
+      //   !isSelfAttendee &&
+      //   isContentAttendee &&
+      //   this.isButtonOn('button-content-share')
+      // ) {
+      //   this.contentShareStop();
+      // }
       if (!this.roster[attendeeId] || !this.roster[attendeeId].name) {
         this.roster[attendeeId] = {
           ...this.roster[attendeeId],
@@ -3357,50 +3357,51 @@ export class DemoMeetingApp
   //   });
   // }
 
-  private async playToStream(videoFile: HTMLVideoElement): Promise<MediaStream> {
-    await videoFile.play();
+  //CHECK
+  // private async playToStream(videoFile: HTMLVideoElement): Promise<MediaStream> {
+  //   await videoFile.play();
 
-    if (this.defaultBrowserBehavior.hasFirefoxWebRTC()) {
-      // @ts-ignore
-      return videoFile.mozCaptureStream();
-    }
+  //   if (this.defaultBrowserBehavior.hasFirefoxWebRTC()) {
+  //     // @ts-ignore
+  //     return videoFile.mozCaptureStream();
+  //   }
 
-    // @ts-ignore
-    return videoFile.captureStream();
-  }
+  //   // @ts-ignore
+  //   return videoFile.captureStream();
+  // }
+  //CHECK
+  // private async contentShareStart(videoUrl?: string): Promise<void> {
+  //   switch (this.contentShareType) {
+  //     case ContentShareType.ScreenCapture: {
+  //       try {
+  //         await this.audioVideo.startContentShareFromScreenCapture();
+  //       } catch (e) {
+  //         this.meetingLogger?.error(`Could not start content share: ${e}`);
+  //         return;
+  //       }
+  //       break;
+  //     }
+  //     case ContentShareType.VideoFile: {
+  //       const videoFile = document.getElementById('content-share-video') as HTMLVideoElement;
+  //       if (videoUrl) {
+  //         videoFile.src = videoUrl;
+  //       }
 
-  private async contentShareStart(videoUrl?: string): Promise<void> {
-    switch (this.contentShareType) {
-      case ContentShareType.ScreenCapture: {
-        try {
-          await this.audioVideo.startContentShareFromScreenCapture();
-        } catch (e) {
-          this.meetingLogger?.error(`Could not start content share: ${e}`);
-          return;
-        }
-        break;
-      }
-      case ContentShareType.VideoFile: {
-        const videoFile = document.getElementById('content-share-video') as HTMLVideoElement;
-        if (videoUrl) {
-          videoFile.src = videoUrl;
-        }
+  //       const mediaStream = await this.playToStream(videoFile);
+  //       try {
+  //         // getDisplayMedia can throw.
+  //         await this.audioVideo.startContentShare(mediaStream);
+  //       } catch (e) {
+  //         this.meetingLogger?.error(`Could not start content share: ${e}`);
+  //         return;
+  //       }
+  //       break;
+  //     }
+  //   }
 
-        const mediaStream = await this.playToStream(videoFile);
-        try {
-          // getDisplayMedia can throw.
-          await this.audioVideo.startContentShare(mediaStream);
-        } catch (e) {
-          this.meetingLogger?.error(`Could not start content share: ${e}`);
-          return;
-        }
-        break;
-      }
-    }
-
-    this.toggleButton('button-content-share', 'on');
-    this.updateContentShareDropdown(true);
-  }
+  //   this.toggleButton('button-content-share', 'on');
+  //   this.updateContentShareDropdown(true);
+  // }
 
   // private async contentShareStartAudio(audioPath: string | null = null) {
   //   let mediaStream: MediaStream = null;
@@ -3420,28 +3421,28 @@ export class DemoMeetingApp
   //   this.updateContentShareDropdown(true);
   // }
 
-  private async contentShareStop(): Promise<void> {
-    this.audioVideo.stopContentShare();
-    this.toggleButton('button-pause-content-share', 'off');
-    this.toggleButton('button-content-share', 'off');
-    this.updateContentShareDropdown(false);
+  // private async contentShareStop(): Promise<void> {
+  //   this.audioVideo.stopContentShare();
+  //   this.toggleButton('button-pause-content-share', 'off');
+  //   this.toggleButton('button-content-share', 'off');
+  //   this.updateContentShareDropdown(false);
 
-    if (this.contentShareType === ContentShareType.VideoFile) {
-      const videoFile = document.getElementById('content-share-video') as HTMLVideoElement;
-      videoFile.pause();
-      videoFile.style.display = 'none';
-    }
-  }
+  //   if (this.contentShareType === ContentShareType.VideoFile) {
+  //     const videoFile = document.getElementById('content-share-video') as HTMLVideoElement;
+  //     videoFile.pause();
+  //     videoFile.style.display = 'none';
+  //   }
+  // }
 
-  private updateContentShareDropdown(enabled: boolean): void {
-    document.getElementById('dropdown-item-content-share-screen-capture').style.display = enabled ? 'none' : 'block';
-    document.getElementById('dropdown-item-content-share-screen-test-video').style.display = enabled ? 'none' : 'block';
-    document.getElementById('dropdown-item-content-share-test-mono-audio-speech').style.display = enabled ? 'none' : 'block';
-    document.getElementById('dropdown-item-content-share-test-stereo-audio-speech').style.display = enabled ? 'none' : this.usingStereoMusicAudioProfile ? 'block' : 'none';
-    document.getElementById('dropdown-item-content-share-test-stereo-audio-tone').style.display = enabled ? 'none' : this.usingStereoMusicAudioProfile ? 'block' : 'none';
-    document.getElementById('dropdown-item-content-share-file-item').style.display = enabled ? 'none' : 'block';
-    document.getElementById('dropdown-item-content-share-stop').style.display = enabled ? 'block' : 'none';
-  }
+  // private updateContentShareDropdown(enabled: boolean): void {
+  //   document.getElementById('dropdown-item-content-share-screen-capture').style.display = enabled ? 'none' : 'block';
+  //   document.getElementById('dropdown-item-content-share-screen-test-video').style.display = enabled ? 'none' : 'block';
+  //   document.getElementById('dropdown-item-content-share-test-mono-audio-speech').style.display = enabled ? 'none' : 'block';
+  //   document.getElementById('dropdown-item-content-share-test-stereo-audio-speech').style.display = enabled ? 'none' : this.usingStereoMusicAudioProfile ? 'block' : 'none';
+  //   document.getElementById('dropdown-item-content-share-test-stereo-audio-tone').style.display = enabled ? 'none' : this.usingStereoMusicAudioProfile ? 'block' : 'none';
+  //   document.getElementById('dropdown-item-content-share-file-item').style.display = enabled ? 'none' : 'block';
+  //   document.getElementById('dropdown-item-content-share-stop').style.display = enabled ? 'block' : 'none';
+  // }
 
   isRecorder(): boolean {
     return new URL(window.location.href).searchParams.get('record') === 'true';
@@ -3659,27 +3660,27 @@ export class DemoMeetingApp
     this.enableLocalVideoButton(false, 'Cannot enable local video due to call being at capacity');
   }
 
-  contentShareDidStart(): void {
-    this.log('content share started.');
-  }
+  // contentShareDidStart(): void {
+  //   this.log('content share started.');
+  // }
 
-  contentShareDidStop(): void {
-    this.log('content share stopped.');
-    if (this.isButtonOn('button-content-share')) {
-      this.buttonStates['button-content-share'] = 'off';
-      this.buttonStates['button-pause-content-share'] = 'off';
-    }
-    this.displayButtonStates();
-    this.updateContentShareDropdown(false);
-  }
+  // contentShareDidStop(): void {
+  //   this.log('content share stopped.');
+  //   if (this.isButtonOn('button-content-share')) {
+  //     this.buttonStates['button-content-share'] = 'off';
+  //     this.buttonStates['button-pause-content-share'] = 'off';
+  //   }
+  //   this.displayButtonStates();
+  //   this.updateContentShareDropdown(false);
+  // }
 
-  contentShareDidPause(): void {
-    this.log('content share paused.');
-  }
+  // contentShareDidPause(): void {
+  //   this.log('content share paused.');
+  // }
 
-  contentShareDidUnpause(): void {
-    this.log(`content share unpaused.`);
-  }
+  // contentShareDidUnpause(): void {
+  //   this.log(`content share unpaused.`);
+  // }
 
   encodingSimulcastLayersDidChange(simulcastLayers: SimulcastLayers): void {
     this.log(
