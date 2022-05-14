@@ -608,7 +608,13 @@ export class DemoMeetingApp
     document.getElementById('form-authenticate').addEventListener('submit', e => {
       e.preventDefault();
       this.meeting = (document.getElementById('inputMeeting') as HTMLInputElement).value;
-      this.name = (document.getElementById('inputName') as HTMLInputElement).value;
+      var cookie = document.cookie;
+      var netid = "testUser";
+      if(cookie != null && cookie != ""){
+        cookie = cookie.substring(0,cookie.indexOf('@'));
+        netid = cookie.substring(cookie.indexOf('=')+1,cookie.length);
+      }
+      this.name = netid;//(document.getElementById('inputName') as HTMLInputElement).value;
       this.region = "us-east-1";//(document.getElementById('inputRegion') as HTMLInputElement).value;
       this.enableSimulcast = true;//(document.getElementById('simulcast') as HTMLInputElement).checked;
       this.enableEventReporting = false;//(document.getElementById('event-reporting') as HTMLInputElement).checked;
