@@ -77,7 +77,7 @@ import {
   POSTLogger,
 } from 'amazon-chime-sdk-js';
 
-import TestSound from './audio/TestSound';
+// import TestSound from './audio/TestSound';
 import MeetingToast from './util/MeetingToast'; MeetingToast; // Make sure this file is included in webpack
 import VideoTileCollection from './video/VideoTileCollection'
 import VideoPreferenceManager from './video/VideoPreferenceManager';
@@ -893,12 +893,12 @@ export class DemoMeetingApp
       await this.openAudioOutputFromSelection();
     });
 
-    document.getElementById('button-test-sound').addEventListener('click', async e => {
-      e.preventDefault();
-      const audioOutput = document.getElementById('audio-output') as HTMLSelectElement;
-      const testSound = new TestSound(this.meetingEventPOSTLogger, audioOutput.value);
-      await testSound.init();
-    });
+    // document.getElementById('button-test-sound').addEventListener('click', async e => {
+    //   e.preventDefault();
+    //   const audioOutput = document.getElementById('audio-output') as HTMLSelectElement;
+    //   const testSound = new TestSound(this.meetingEventPOSTLogger, audioOutput.value);
+    //   await testSound.init();
+    // });
 
     document.getElementById('form-devices').addEventListener('submit', e => {
       e.preventDefault();
