@@ -8,7 +8,7 @@ import {
   AsyncScheduler,
   Attendee,
   AudioInputDevice,
-  AudioProfile,
+  //AudioProfile,
   AudioVideoFacade,
   AudioVideoObserver,
   BackgroundBlurProcessor,
@@ -92,9 +92,9 @@ import {
 import SyntheticVideoDeviceFactory from './video/SyntheticVideoDeviceFactory';
 import { getPOSTLogger } from './util/MeetingLogger';
 
-let SHOULD_EARLY_CONNECT = (() => {
-  return document.location.search.includes('earlyConnect=1');
-})();
+// let SHOULD_EARLY_CONNECT = (() => {
+//   return document.location.search.includes('earlyConnect=1');
+// })();
 
 let SHOULD_DIE_ON_FATALS = (() => {
   const isLocal = document.location.host === '127.0.0.1:8080' || document.location.host === 'localhost:8080';
@@ -404,7 +404,7 @@ export class DemoMeetingApp
       'amazon-chime-sdk-js@' + Versioning.sdkVersion;
     this.initEventListeners();
     this.initParameters();
-    this.setMediaRegion();
+    // this.setMediaRegion();
     if (this.isRecorder() || this.isBroadcaster()) {
       AsyncScheduler.nextTick(async () => {
         this.meeting = new URL(window.location.href).searchParams.get('m');
@@ -472,7 +472,7 @@ export class DemoMeetingApp
           this.voiceFocusTransformer && this.voiceFocusTransformer.isSupported();
         if (this.supportsVoiceFocus) {
           logger.info('[DEMO] Amazon Voice Focus is supported.');
-          document.getElementById('voice-focus-setting').classList.remove('hidden');
+          // document.getElementById('voice-focus-setting').classList.remove('hidden');
           return;
         }
       }
@@ -482,7 +482,7 @@ export class DemoMeetingApp
     }
     logger.warn('[DEMO] Does not support Amazon Voice Focus.');
     this.supportsVoiceFocus = false;
-    document.getElementById('voice-focus-setting').classList.toggle('hidden', true);
+    //document.getElementById('voice-focus-setting').classList.toggle('hidden', true);
   }
 
   async initBackgroundBlur(): Promise<void> {
@@ -536,111 +536,111 @@ export class DemoMeetingApp
     }
   }
 
-  private async onVoiceFocusSettingChanged(): Promise<void> {
-    this.log('[DEMO] Amazon Voice Focus setting toggled to', this.enableVoiceFocus);
-    this.openAudioInputFromSelectionAndPreview();
-  }
+  // private async onVoiceFocusSettingChanged(): Promise<void> {
+  //   this.log('[DEMO] Amazon Voice Focus setting toggled to', this.enableVoiceFocus);
+  //   this.openAudioInputFromSelectionAndPreview();
+  // }
 
   initEventListeners(): void {
     if (!this.defaultBrowserBehavior.hasChromiumWebRTC()) {
-      (document.getElementById('simulcast') as HTMLInputElement).disabled = true;
+      // (document.getElementById('simulcast') as HTMLInputElement).disabled = true;
     }
 
-    if (!this.defaultBrowserBehavior.supportDownlinkBandwidthEstimation()) {
-      (document.getElementById('priority-downlink-policy') as HTMLInputElement).disabled = true;
-    }
+    // if (!this.defaultBrowserBehavior.supportDownlinkBandwidthEstimation()) {
+    //   (document.getElementById('priority-downlink-policy') as HTMLInputElement).disabled = true;
+    // }
 
-    document.getElementById('join-view-only').addEventListener('change', () => {
-      this.isViewOnly = (document.getElementById('join-view-only') as HTMLInputElement).checked;
-    });
+    // document.getElementById('join-view-only').addEventListener('change', () => {
+    //   this.isViewOnly = (document.getElementById('join-view-only') as HTMLInputElement).checked;
+    // });
 
-    document.getElementById('priority-downlink-policy').addEventListener('change', e => {
-      this.usePriorityBasedDownlinkPolicy = (document.getElementById('priority-downlink-policy') as HTMLInputElement).checked;
+    // document.getElementById('priority-downlink-policy').addEventListener('change', e => {
+    //   this.usePriorityBasedDownlinkPolicy = (document.getElementById('priority-downlink-policy') as HTMLInputElement).checked;
 
-      const priorityBasedDownlinkPolicyConfig = document.getElementById(
-        'priority-downlink-policy-preset'
-      ) as HTMLSelectElement;
-      const enablePaginationCheckbox = document.getElementById(
-        'enable-pagination-checkbox'
-      ) as HTMLSelectElement;
+      // const priorityBasedDownlinkPolicyConfig = document.getElementById(
+      //   'priority-downlink-policy-preset'
+      // ) as HTMLSelectElement;
+      // const enablePaginationCheckbox = document.getElementById(
+      //   'enable-pagination-checkbox'
+      // ) as HTMLSelectElement;
 
 
-      if (this.usePriorityBasedDownlinkPolicy) {
-        priorityBasedDownlinkPolicyConfig.style.display = 'block';
-        enablePaginationCheckbox.style.display = 'block';
-      } else {
-        priorityBasedDownlinkPolicyConfig.style.display = 'none';
-        enablePaginationCheckbox.style.display = 'none';
-      }
-    });
+    //   if (this.usePriorityBasedDownlinkPolicy) {
+    //     // priorityBasedDownlinkPolicyConfig.style.display = 'block';
+    //     enablePaginationCheckbox.style.display = 'block';
+    //   } else {
+    //     // priorityBasedDownlinkPolicyConfig.style.display = 'none';
+    //     enablePaginationCheckbox.style.display = 'none';
+    //   }
+    // });
 
-    const echoReductionCheckbox = (document.getElementById('echo-reduction-checkbox') as HTMLInputElement);
-    (document.getElementById('webaudio') as HTMLInputElement).addEventListener('change', e => {
-      this.enableWebAudio = (document.getElementById('webaudio') as HTMLInputElement).checked;
-      if (this.enableWebAudio) {
-        echoReductionCheckbox.style.display = 'block';
-      } else {
-        echoReductionCheckbox.style.display = 'none';
-      }
-    });
+    // const echoReductionCheckbox = (document.getElementById('echo-reduction-checkbox') as HTMLInputElement);
+    // (document.getElementById('webaudio') as HTMLInputElement).addEventListener('change', e => {
+    //   this.enableWebAudio = (document.getElementById('webaudio') as HTMLInputElement).checked;
+    //   if (this.enableWebAudio) {
+    //     echoReductionCheckbox.style.display = 'block';
+    //   } else {
+    //     echoReductionCheckbox.style.display = 'none';
+    //   }
+    // });
 
-    const presetDropDown = document.getElementById('priority-downlink-policy-preset') as HTMLSelectElement;
-    presetDropDown.addEventListener('change', async e => {
-      switch (presetDropDown.value) {
-        case 'stable':
-          this.videoPriorityBasedPolicyConfig = VideoPriorityBasedPolicyConfig.StableNetworkPreset;
-          break;
-        case 'unstable':
-          this.videoPriorityBasedPolicyConfig = VideoPriorityBasedPolicyConfig.UnstableNetworkPreset;
-          break;
-        case 'default':
-          this.videoPriorityBasedPolicyConfig = VideoPriorityBasedPolicyConfig.Default;
-          break;
-      }
-      this.log('priority-downlink-policy-preset is changed: ' + presetDropDown.value);
-    });
+    // const presetDropDown = document.getElementById('priority-downlink-policy-preset') as HTMLSelectElement;
+    // presetDropDown.addEventListener('change', async e => {
+    //   switch (presetDropDown.value) {
+    //     case 'stable':
+    //       this.videoPriorityBasedPolicyConfig = VideoPriorityBasedPolicyConfig.StableNetworkPreset;
+    //       break;
+    //     case 'unstable':
+    //       this.videoPriorityBasedPolicyConfig = VideoPriorityBasedPolicyConfig.UnstableNetworkPreset;
+    //       break;
+    //     case 'default':
+    //       this.videoPriorityBasedPolicyConfig = VideoPriorityBasedPolicyConfig.Default;
+    //       break;
+    //   }
+    //   this.log('priority-downlink-policy-preset is changed: ' + presetDropDown.value);
+    // });
 
-    const replicaMeetingInput = document.getElementById('replica-meeting-input');
-    replicaMeetingInput.addEventListener('change', async _e => {
-      (document.getElementById('primary-meeting-external-id') as HTMLInputElement).value = "";
-    });
+    // const replicaMeetingInput = document.getElementById('replica-meeting-input');
+    // replicaMeetingInput.addEventListener('change', async _e => {
+    //   (document.getElementById('primary-meeting-external-id') as HTMLInputElement).value = "";
+    // });
 
     document.getElementById('form-authenticate').addEventListener('submit', e => {
       e.preventDefault();
       this.meeting = (document.getElementById('inputMeeting') as HTMLInputElement).value;
       this.name = (document.getElementById('inputName') as HTMLInputElement).value;
-      this.region = (document.getElementById('inputRegion') as HTMLInputElement).value;
-      this.enableSimulcast = (document.getElementById('simulcast') as HTMLInputElement).checked;
-      this.enableEventReporting = (document.getElementById('event-reporting') as HTMLInputElement).checked;
-      this.deleteOwnAttendeeToLeave = (document.getElementById('delete-attendee') as HTMLInputElement).checked;
-      this.enableWebAudio = (document.getElementById('webaudio') as HTMLInputElement).checked;
-      this.usePriorityBasedDownlinkPolicy = (document.getElementById('priority-downlink-policy') as HTMLInputElement).checked;
-      this.echoReductionCapability = (document.getElementById('echo-reduction-capability') as HTMLInputElement).checked;
-      this.primaryExternalMeetingId = (document.getElementById('primary-meeting-external-id') as HTMLInputElement).value;
+      this.region = "us-east-1";//(document.getElementById('inputRegion') as HTMLInputElement).value;
+      this.enableSimulcast = true;//(document.getElementById('simulcast') as HTMLInputElement).checked;
+      this.enableEventReporting = false;//(document.getElementById('event-reporting') as HTMLInputElement).checked;
+      this.deleteOwnAttendeeToLeave = false;//(document.getElementById('delete-attendee') as HTMLInputElement).checked;
+      this.enableWebAudio = false;//(document.getElementById('webaudio') as HTMLInputElement).checked;
+      this.usePriorityBasedDownlinkPolicy = false;//(document.getElementById('priority-downlink-policy') as HTMLInputElement).checked;
+      this.echoReductionCapability = false;//(document.getElementById('echo-reduction-capability') as HTMLInputElement).checked;
+      this.primaryExternalMeetingId = "";//(document.getElementById('primary-meeting-external-id') as HTMLInputElement).value;
 
-      const chosenLogLevel = (document.getElementById('logLevelSelect') as HTMLSelectElement).value;
-      switch (chosenLogLevel) {
-        case 'INFO':
-          this.logLevel = LogLevel.INFO;
-          break;
-        case 'DEBUG':
-          this.logLevel = LogLevel.DEBUG;
-          break;
-        case 'WARN':
-          this.logLevel = LogLevel.WARN;
-          break;
-        case 'ERROR':
-          this.logLevel = LogLevel.ERROR;
-          break;
-        default:
-          this.logLevel = LogLevel.OFF;
-          break;
-      }
+      // const chosenLogLevel = (document.getElementById('logLevelSelect') as HTMLSelectElement).value;
+      // switch (chosenLogLevel) {
+      //   case 'INFO':
+      //     this.logLevel = LogLevel.INFO;
+      //     break;
+      //   case 'DEBUG':
+      //     this.logLevel = LogLevel.DEBUG;
+      //     break;
+      //   case 'WARN':
+      //     this.logLevel = LogLevel.WARN;
+      //     break;
+      //   case 'ERROR':
+      //     this.logLevel = LogLevel.ERROR;
+      //     break;
+      //   default:
+      //     this.logLevel = LogLevel.OFF;
+      //     break;
+      // }
 
       AsyncScheduler.nextTick(
         async (): Promise<void> => {
           let chimeMeetingId: string = '';
-          this.showProgress('progress-authenticate');
+          // this.showProgress('progress-authenticate');
           try {
             chimeMeetingId = await this.authenticate();
           } catch (error) {
@@ -678,7 +678,7 @@ export class DemoMeetingApp
             await this.openAudioOutputFromSelection();
             await this.join();
             this.switchToFlow('flow-meeting');
-            this.hideProgress('progress-authenticate');
+            // this.hideProgress('progress-authenticate');
             return;
           }
           await this.initVoiceFocus();
@@ -687,14 +687,17 @@ export class DemoMeetingApp
           await this.populateAllDeviceLists();
           await this.populateVideoFilterInputList(false);
           await this.populateVideoFilterInputList(true);
-          if (this.enableSimulcast) {
-            const videoInputQuality = document.getElementById(
-              'video-input-quality'
-            ) as HTMLSelectElement;
-            videoInputQuality.value = '720p';
-            this.audioVideo.chooseVideoInputQuality(1280, 720, 15);
-            videoInputQuality.disabled = true;
-          }
+          // if (this.enableSimulcast) {
+          //   const videoInputQuality = document.getElementById(
+          //     'video-input-quality'
+          //   ) as HTMLSelectElement;
+          //   videoInputQuality.value = '720p';
+          //   this.audioVideo.chooseVideoInputQuality(1280, 720, 15);
+          //   videoInputQuality.disabled = true;
+          // }
+
+          this.audioVideo.chooseVideoInputQuality(1280, 720, 15);
+          this.audioVideo.setVideoMaxBandwidthKbps(1400);
 
           // `this.primaryExternalMeetingId` may by the join request
           const buttonPromoteToPrimary = document.getElementById('button-promote-to-primary');
@@ -716,64 +719,64 @@ export class DemoMeetingApp
             fatal(err);
           }
           await this.openAudioOutputFromSelection();
-          this.hideProgress('progress-authenticate');
+          // this.hideProgress('progress-authenticate');
 
           // Open the signaling connection while the user is checking their input devices.
-          const preconnect = document.getElementById('preconnect') as HTMLInputElement;
-          if (preconnect.checked) {
+          // const preconnect = document.getElementById('preconnect') as HTMLInputElement;
+          // if (preconnect.checked) {
             this.audioVideo.start({ signalingOnly: true });
-          }
+          // }
         }
       );
     });
 
-    const earlyConnectCheckbox = document.getElementById('preconnect') as HTMLInputElement;
-    earlyConnectCheckbox.checked = SHOULD_EARLY_CONNECT;
-    earlyConnectCheckbox.onchange = () => {
-      SHOULD_EARLY_CONNECT = !!earlyConnectCheckbox.checked;
-    }
+    // const earlyConnectCheckbox = document.getElementById('preconnect') as HTMLInputElement;
+    // earlyConnectCheckbox.checked = SHOULD_EARLY_CONNECT;
+    // earlyConnectCheckbox.onchange = () => {
+    //   SHOULD_EARLY_CONNECT = !!earlyConnectCheckbox.checked;
+    // }
 
-    const dieCheckbox = document.getElementById('die') as HTMLInputElement;
-    dieCheckbox.checked = SHOULD_DIE_ON_FATALS;
-    dieCheckbox.onchange = () => {
-      SHOULD_DIE_ON_FATALS = !!dieCheckbox.checked;
-    }
+    // const dieCheckbox = document.getElementById('die') as HTMLInputElement;
+    // dieCheckbox.checked = SHOULD_DIE_ON_FATALS;
+    // dieCheckbox.onchange = () => {
+    //   SHOULD_DIE_ON_FATALS = !!dieCheckbox.checked;
+    // }
 
-    const speechMonoCheckbox = document.getElementById(
-      'fullband-speech-mono-quality'
-    ) as HTMLInputElement;
-    const musicMonoCheckbox = document.getElementById(
-      'fullband-music-mono-quality'
-    ) as HTMLInputElement;
-    const musicStereoCheckbox = document.getElementById(
-      'fullband-music-stereo-quality'
-    ) as HTMLInputElement;
-    speechMonoCheckbox.addEventListener('change', _e => {
-      if (speechMonoCheckbox.checked) {
-        musicMonoCheckbox.checked = false;
-        musicStereoCheckbox.checked = false;
-      }
-    });
-    musicMonoCheckbox.addEventListener('change', _e => {
-      if (musicMonoCheckbox.checked) {
-        speechMonoCheckbox.checked = false;
-        musicStereoCheckbox.checked = false;
-      }
-    });
-    musicStereoCheckbox.addEventListener('change', _e => {
-      if (musicStereoCheckbox.checked) {
-        speechMonoCheckbox.checked = false;
-        musicMonoCheckbox.checked = false;
-        this.usingStereoMusicAudioProfile = true;
-      } else {
-        this.usingStereoMusicAudioProfile = false;
-      }
-    });
+    // const speechMonoCheckbox = document.getElementById(
+    //   'fullband-speech-mono-quality'
+    // ) as HTMLInputElement;
+    // const musicMonoCheckbox = document.getElementById(
+    //   'fullband-music-mono-quality'
+    // ) as HTMLInputElement;
+    // const musicStereoCheckbox = document.getElementById(
+    //   'fullband-music-stereo-quality'
+    // ) as HTMLInputElement;
+    // speechMonoCheckbox.addEventListener('change', _e => {
+    //   if (speechMonoCheckbox.checked) {
+    //     musicMonoCheckbox.checked = false;
+    //     musicStereoCheckbox.checked = false;
+    //   }
+    // });
+    // musicMonoCheckbox.addEventListener('change', _e => {
+    //   if (musicMonoCheckbox.checked) {
+    //     speechMonoCheckbox.checked = false;
+    //     musicStereoCheckbox.checked = false;
+    //   }
+    // });
+    // musicStereoCheckbox.addEventListener('change', _e => {
+    //   if (musicStereoCheckbox.checked) {
+    //     speechMonoCheckbox.checked = false;
+    //     musicMonoCheckbox.checked = false;
+    //     this.usingStereoMusicAudioProfile = true;
+    //   } else {
+    //     this.usingStereoMusicAudioProfile = false;
+    //   }
+    // });
 
-    document.getElementById('to-sip-flow').addEventListener('click', e => {
-      e.preventDefault();
-      this.switchToFlow('flow-sip-authenticate');
-    });
+    // document.getElementById('to-sip-flow').addEventListener('click', e => {
+    //   e.preventDefault();
+    //   this.switchToFlow('flow-sip-authenticate');
+    // });
 
     document.getElementById('form-sip-authenticate').addEventListener('submit', e => {
       e.preventDefault();
@@ -784,7 +787,7 @@ export class DemoMeetingApp
 
       AsyncScheduler.nextTick(
         async (): Promise<void> => {
-          this.showProgress('progress-authenticate');
+          // this.showProgress('progress-authenticate');
           const region = this.region || 'us-east-1';
           try {
             const response = await fetch(
@@ -812,21 +815,21 @@ export class DemoMeetingApp
           }
           const sipUriElement = document.getElementById('sip-uri') as HTMLInputElement;
           sipUriElement.value = this.sipURI;
-          this.hideProgress('progress-authenticate');
+          // this.hideProgress('progress-authenticate');
         }
       );
     });
 
-    if (!this.areVideoFiltersSupported()) {
-      document.getElementById('video-input-filter-container').style.display = 'none';
-    }
+    // if (!this.areVideoFiltersSupported()) {
+    //   document.getElementById('video-input-filter-container').style.display = 'none';
+    // }
 
-    let videoInputFilter = document.getElementById('video-input-filter') as HTMLInputElement;
-    videoInputFilter.addEventListener('change', async () => {
-      this.selectedVideoFilterItem = <VideoFilterName>videoInputFilter.value;
-      this.log(`Clicking video filter: ${this.selectedVideoFilterItem}`);
-      await this.openVideoInputFromSelection(this.selectedVideoInput, true)
-    });
+    // let videoInputFilter = document.getElementById('video-input-filter') as HTMLInputElement;
+    // videoInputFilter.addEventListener('change', async () => {
+    //   this.selectedVideoFilterItem = <VideoFilterName>videoInputFilter.value;
+    //   this.log(`Clicking video filter: ${this.selectedVideoFilterItem}`);
+    //   await this.openVideoInputFromSelection(this.selectedVideoInput, true)
+    // });
 
     document.getElementById('copy-sip-uri').addEventListener('click', () => {
       const sipUriElement = document.getElementById('sip-uri') as HTMLInputElement;
@@ -850,33 +853,33 @@ export class DemoMeetingApp
       }
     });
 
-    const videoInputQuality = document.getElementById('video-input-quality') as HTMLSelectElement;
-    videoInputQuality.addEventListener('change', async (_ev: Event) => {
-      this.log('Video input quality is changed');
-      switch (videoInputQuality.value) {
-        case '360p':
-          this.audioVideo.chooseVideoInputQuality(640, 360, 15);
-          this.audioVideo.setVideoMaxBandwidthKbps(600);
-          break;
-        case '540p':
-          this.audioVideo.chooseVideoInputQuality(960, 540, 15);
-          this.audioVideo.setVideoMaxBandwidthKbps(1400);
-          break;
-        case '720p':
-          this.audioVideo.chooseVideoInputQuality(1280, 720, 15);
-          this.audioVideo.setVideoMaxBandwidthKbps(1400);
-          break;
-      }
-      try {
-        if (this.chosenVideoTransformDevice) {
-          await this.chosenVideoTransformDevice.stop();
-          this.chosenVideoTransformDevice = null;
-        }
-        await this.openVideoInputFromSelection(videoInput.value, true);
-      } catch (err) {
-        fatal(err);
-      }
-    });
+    // const videoInputQuality = document.getElementById('video-input-quality') as HTMLSelectElement;
+    // videoInputQuality.addEventListener('change', async (_ev: Event) => {
+    //   this.log('Video input quality is changed');
+    //   switch (videoInputQuality.value) {
+    //     case '360p':
+    //       this.audioVideo.chooseVideoInputQuality(640, 360, 15);
+    //       this.audioVideo.setVideoMaxBandwidthKbps(600);
+    //       break;
+    //     case '540p':
+    //       this.audioVideo.chooseVideoInputQuality(960, 540, 15);
+    //       this.audioVideo.setVideoMaxBandwidthKbps(1400);
+    //       break;
+    //     case '720p':
+    //       this.audioVideo.chooseVideoInputQuality(1280, 720, 15);
+    //       this.audioVideo.setVideoMaxBandwidthKbps(1400);
+    //       break;
+    //   }
+    //   try {
+    //     if (this.chosenVideoTransformDevice) {
+    //       await this.chosenVideoTransformDevice.stop();
+    //       this.chosenVideoTransformDevice = null;
+    //     }
+    //     await this.openVideoInputFromSelection(videoInput.value, true);
+    //   } catch (err) {
+    //     fatal(err);
+    //   }
+    // });
 
     const audioOutput = document.getElementById('audio-output') as HTMLSelectElement;
     audioOutput.addEventListener('change', async (_ev: Event) => {
@@ -896,7 +899,7 @@ export class DemoMeetingApp
       AsyncScheduler.nextTick(async () => {
         try {
           this.showProgress('progress-join');
-          await this.stopAudioPreview();
+          //await this.stopAudioPreview();
           await this.openVideoInputFromSelection(null, true);
           // stopVideoProcessor should be called before join; it ensures that state variables and video processor stream are cleaned / removed before joining the meeting.
           // If stopVideoProcessor is not called then the state from preview screen will be carried into the in meeting experience and it will cause undesired side effects.
@@ -913,13 +916,13 @@ export class DemoMeetingApp
       });
     });
 
-    (document.getElementById('add-voice-focus') as HTMLInputElement).addEventListener(
-      'change',
-      e => {
-        this.enableVoiceFocus = (e.target as HTMLInputElement).checked;
-        this.onVoiceFocusSettingChanged();
-      }
-    );
+    // (document.getElementById('add-voice-focus') as HTMLInputElement).addEventListener(
+    //   'change',
+    //   e => {
+    //     this.enableVoiceFocus = (e.target as HTMLInputElement).checked;
+    //     this.onVoiceFocusSettingChanged();
+    //   }
+    // );
 
     const buttonMute = document.getElementById('button-microphone');
     buttonMute.addEventListener('click', _e => {
@@ -1017,6 +1020,8 @@ export class DemoMeetingApp
             await this.openVideoInputFromSelection(camera, false);
             this.audioVideo.startLocalVideoTile();
           } catch (err) {
+            //TODO: DELETE THIS
+            console.log(err);
             this.toggleButton('button-camera', 'off')
             fatal(err);
           }
@@ -1224,7 +1229,10 @@ export class DemoMeetingApp
     });
 
     function isChecked(id: string): boolean {
-      return (document.getElementById(id) as HTMLInputElement).checked;
+      if(document.getElementById(id) != null){
+        return (document.getElementById(id) as HTMLInputElement).checked;
+      }
+      return false;
     }
 
     // fetches checked values of the list from given selector id
@@ -1414,14 +1422,14 @@ export class DemoMeetingApp
     });
   }
 
-  getSupportedMediaRegions(): string[] {
-    const supportedMediaRegions: string[] = [];
-    const mediaRegion = document.getElementById('inputRegion') as HTMLSelectElement;
-    for (let i = 0; i < mediaRegion.length; i++) {
-      supportedMediaRegions.push(mediaRegion.value);
-    }
-    return supportedMediaRegions;
-  }
+  // getSupportedMediaRegions(): string[] {
+  //   const supportedMediaRegions: string[] = [];
+  //   const mediaRegion = document.getElementById('inputRegion') as HTMLSelectElement;
+  //   for (let i = 0; i < mediaRegion.length; i++) {
+  //     supportedMediaRegions.push(mediaRegion.value);
+  //   }
+  //   return supportedMediaRegions;
+  // }
 
   async getNearestMediaRegion(): Promise<string> {
     const nearestMediaRegionResponse = await fetch(`https://nearest-media-region.l.chime.aws`, {
@@ -1432,33 +1440,33 @@ export class DemoMeetingApp
     return nearestMediaRegion;
   }
 
-  setMediaRegion(): void {
-    AsyncScheduler.nextTick(
-      async (): Promise<void> => {
-        try {
-          const query = new URLSearchParams(document.location.search);
-          const region = query.get('region');
-          const nearestMediaRegion = region ? region : await this.getNearestMediaRegion();
-          if (nearestMediaRegion === '' || nearestMediaRegion === null) {
-            throw new Error('Nearest Media Region cannot be null or empty');
-          }
-          const supportedMediaRegions: string[] = this.getSupportedMediaRegions();
-          if (supportedMediaRegions.indexOf(nearestMediaRegion) === -1) {
-            supportedMediaRegions.push(nearestMediaRegion);
-            const mediaRegionElement = document.getElementById('inputRegion') as HTMLSelectElement;
-            const newMediaRegionOption = document.createElement('option');
-            newMediaRegionOption.value = nearestMediaRegion;
-            newMediaRegionOption.text = nearestMediaRegion + ' (' + nearestMediaRegion + ')';
-            mediaRegionElement.add(newMediaRegionOption, null);
-          }
-          (document.getElementById('inputRegion') as HTMLInputElement).value = nearestMediaRegion;
-        } catch (error) {
-          fatal(error);
-          this.log('Default media region selected: ' + error.message);
-        }
-      }
-    );
-  }
+  // setMediaRegion(): void {
+  //   AsyncScheduler.nextTick(
+  //     async (): Promise<void> => {
+  //       try {
+  //         const query = new URLSearchParams(document.location.search);
+  //         const region = query.get('region');
+  //         const nearestMediaRegion = region ? region : await this.getNearestMediaRegion();
+  //         if (nearestMediaRegion === '' || nearestMediaRegion === null) {
+  //           throw new Error('Nearest Media Region cannot be null or empty');
+  //         }
+  //         const supportedMediaRegions: string[] = this.getSupportedMediaRegions();
+  //         if (supportedMediaRegions.indexOf(nearestMediaRegion) === -1) {
+  //           supportedMediaRegions.push(nearestMediaRegion);
+  //           const mediaRegionElement = document.getElementById('inputRegion') as HTMLSelectElement;
+  //           const newMediaRegionOption = document.createElement('option');
+  //           newMediaRegionOption.value = nearestMediaRegion;
+  //           newMediaRegionOption.text = nearestMediaRegion + ' (' + nearestMediaRegion + ')';
+  //           mediaRegionElement.add(newMediaRegionOption, null);
+  //         }
+  //         (document.getElementById('inputRegion') as HTMLInputElement).value = nearestMediaRegion;
+  //       } catch (error) {
+  //         fatal(error);
+  //         this.log('Default media region selected: ' + error.message);
+  //       }
+  //     }
+  //   );
+  // }
 
   async promoteToPrimaryMeeting() {
     this.meetingLogger.info("Attempting to promote self to primary meeting from replica");
@@ -1794,9 +1802,9 @@ export class DemoMeetingApp
     }
     configuration.applicationMetadata = ApplicationMetadata.create('amazon-chime-sdk-js-demo', '2.0.0');
 
-    if ((document.getElementById('pause-last-frame') as HTMLInputElement).checked) {
-      configuration.keepLastFrameWhenPaused = true;
-    }
+    // if ((document.getElementById('pause-last-frame') as HTMLInputElement).checked) {
+    //   configuration.keepLastFrameWhenPaused = true;
+    // }
 
     this.meetingSession = new DefaultMeetingSession(
       configuration,
@@ -1805,24 +1813,24 @@ export class DemoMeetingApp
       new DefaultEventController(configuration, this.meetingLogger, this.eventReporter)
     );
 
-    if ((document.getElementById('fullband-speech-mono-quality') as HTMLInputElement).checked) {
-      this.meetingSession.audioVideo.setAudioProfile(AudioProfile.fullbandSpeechMono());
-      this.meetingSession.audioVideo.setContentAudioProfile(AudioProfile.fullbandSpeechMono());
-      this.log('Using audio profile fullband-speech-mono-quality');
-    } else if (
-      (document.getElementById('fullband-music-mono-quality') as HTMLInputElement).checked
-    ) {
-      this.meetingSession.audioVideo.setAudioProfile(AudioProfile.fullbandMusicMono());
-      this.meetingSession.audioVideo.setContentAudioProfile(AudioProfile.fullbandMusicMono());
-      this.log('Using audio profile fullband-music-mono-quality');
-    } else if (
-      (document.getElementById('fullband-music-stereo-quality') as HTMLInputElement).checked
-    ) {
-      this.meetingSession.audioVideo.setAudioProfile(AudioProfile.fullbandMusicStereo());
-      this.meetingSession.audioVideo.setContentAudioProfile(AudioProfile.fullbandMusicStereo());
-      this.log('Using audio profile fullband-music-stereo-quality');
-    }
-    this.audioVideo = this.meetingSession.audioVideo;
+    // if ((document.getElementById('fullband-speech-mono-quality') as HTMLInputElement).checked) {
+    //   this.meetingSession.audioVideo.setAudioProfile(AudioProfile.fullbandSpeechMono());
+    //   this.meetingSession.audioVideo.setContentAudioProfile(AudioProfile.fullbandSpeechMono());
+    //   this.log('Using audio profile fullband-speech-mono-quality');
+    // } else if (
+    //   (document.getElementById('fullband-music-mono-quality') as HTMLInputElement).checked
+    // ) {
+    //   this.meetingSession.audioVideo.setAudioProfile(AudioProfile.fullbandMusicMono());
+    //   this.meetingSession.audioVideo.setContentAudioProfile(AudioProfile.fullbandMusicMono());
+    //   this.log('Using audio profile fullband-music-mono-quality');
+    // } else if (
+    //   (document.getElementById('fullband-music-stereo-quality') as HTMLInputElement).checked
+    // ) {
+    //   this.meetingSession.audioVideo.setAudioProfile(AudioProfile.fullbandMusicStereo());
+    //   this.meetingSession.audioVideo.setContentAudioProfile(AudioProfile.fullbandMusicStereo());
+    //   this.log('Using audio profile fullband-music-stereo-quality');
+    // }
+   this.audioVideo = this.meetingSession.audioVideo;
     this.audioVideo.addDeviceChangeObserver(this);
     this.setupDeviceLabelTrigger();
     this.setupMuteHandler();
@@ -1837,10 +1845,11 @@ export class DemoMeetingApp
     this.videoTileCollection = new VideoTileCollection(this.audioVideo,
       this.meetingLogger,
       this.usePriorityBasedDownlinkPolicy ? new VideoPreferenceManager(this.meetingLogger, this.priorityBasedDownlinkPolicy) : undefined,
-      (document.getElementById('enable-pagination') as HTMLInputElement).checked ? DemoMeetingApp.REDUCED_REMOTE_VIDEO_PAGE_SIZE : DemoMeetingApp.REMOTE_VIDEO_PAGE_SIZE)
+      // (document.getElementById('enable-pagination') as HTMLInputElement).checked ? DemoMeetingApp.REDUCED_REMOTE_VIDEO_PAGE_SIZE : DemoMeetingApp.REMOTE_VIDEO_PAGE_SIZE)
+      true ? DemoMeetingApp.REDUCED_REMOTE_VIDEO_PAGE_SIZE : DemoMeetingApp.REMOTE_VIDEO_PAGE_SIZE)
     this.audioVideo.addObserver(this.videoTileCollection);
 
-    this.initContentShareDropDownItems();
+  //   this.initContentShareDropDownItems();
   }
 
   async setupEventReporter(configuration: MeetingSessionConfiguration): Promise<EventReporter> {
@@ -2559,22 +2568,22 @@ export class DemoMeetingApp
     await this.populateAudioOutputList();
   }
 
-  private async selectVideoFilterByName(name: VideoFilterName): Promise<void> {
-    this.selectedVideoFilterItem = name;
-    this.log(`clicking video filter ${this.selectedVideoFilterItem}`);
-    this.toggleButton(
-      'button-video-filter',
-      this.selectedVideoFilterItem === 'None' ? 'off' : 'on'
-    );
-    if (this.isButtonOn('button-camera')) {
-      try {
-        await this.openVideoInputFromSelection(this.selectedVideoInput, false);
-      } catch (err) {
-        fatal(err);
-        this.log('Failed to choose VideoTransformDevice', err);
-      }
-    }
-  }
+  // private async selectVideoFilterByName(name: VideoFilterName): Promise<void> {
+  //   this.selectedVideoFilterItem = name;
+  //   this.log(`clicking video filter ${this.selectedVideoFilterItem}`);
+  //   this.toggleButton(
+  //     'button-video-filter',
+  //     this.selectedVideoFilterItem === 'None' ? 'off' : 'on'
+  //   );
+  //   if (this.isButtonOn('button-camera')) {
+  //     try {
+  //       await this.openVideoInputFromSelection(this.selectedVideoInput, false);
+  //     } catch (err) {
+  //       fatal(err);
+  //       this.log('Failed to choose VideoTransformDevice', err);
+  //     }
+  //   }
+  // }
 
   private async stopVideoProcessor(): Promise<void> {
     this.log('Clearing filter variables and stopping the video transform device');
@@ -2627,23 +2636,23 @@ export class DemoMeetingApp
 
   private async populateFilterList(isPreviewWindow: boolean, genericName: string, filters: VideoFilterName[]): Promise<void> {
     if (isPreviewWindow) {
-      this.populateVideoPreviewFilterList(
-        'video-input-filter',
-        genericName,
-        filters
-      );
+      // this.populateVideoPreviewFilterList(
+      //   'video-input-filter',
+      //   genericName,
+      //   filters
+      // );
     }
     else {
-      this.populateInMeetingDeviceList(
-        'dropdown-menu-filter',
-        genericName,
-        [],
-        filters,
-        undefined,
-        async (name: VideoFilterName) => {
-          await this.selectVideoFilterByName(name);
-        }
-      );
+      // this.populateInMeetingDeviceList(
+      //   'dropdown-menu-filter',
+      //   genericName,
+      //   [],
+      //   filters,
+      //   undefined,
+      //   async (name: VideoFilterName) => {
+      //     await this.selectVideoFilterByName(name);
+      //   }
+      // );
     }
   }
 
@@ -2845,7 +2854,7 @@ export class DemoMeetingApp
     await this.audioVideo.chooseAudioOutput(device);
   }
 
-  private analyserNodeCallback: undefined | (() => void);
+  // private analyserNodeCallback: undefined | (() => void);
 
   async selectedAudioInput(): Promise<AudioInputDevice> {
     const audioInput = document.getElementById('audio-input') as HTMLSelectElement;
@@ -2877,30 +2886,30 @@ export class DemoMeetingApp
   }
 
   async openAudioInputFromSelectionAndPreview(): Promise<void> {
-    await this.stopAudioPreview();
+    //await this.stopAudioPreview();
     await this.openAudioInputFromSelection();
     this.log('Starting audio preview.');
-    await this.startAudioPreview();
+    // await this.startAudioPreview();
   }
 
-  setAudioPreviewPercent(percent: number): void {
-    const audioPreview = document.getElementById('audio-preview');
-    if (!audioPreview) {
-      return;
-    }
-    this.updateProperty(audioPreview.style, 'transitionDuration', '33ms');
-    this.updateProperty(audioPreview.style, 'width', `${percent}%`);
-    if (audioPreview.getAttribute('aria-valuenow') !== `${percent}`) {
-      audioPreview.setAttribute('aria-valuenow', `${percent}`);
-    }
-  }
+  // setAudioPreviewPercent(percent: number): void {
+  //   const audioPreview = document.getElementById('audio-preview');
+  //   if (!audioPreview) {
+  //     return;
+  //   }
+  //   this.updateProperty(audioPreview.style, 'transitionDuration', '33ms');
+  //   this.updateProperty(audioPreview.style, 'width', `${percent}%`);
+  //   if (audioPreview.getAttribute('aria-valuenow') !== `${percent}`) {
+  //     audioPreview.setAttribute('aria-valuenow', `${percent}`);
+  //   }
+  // }
 
   async stopAudioPreview(): Promise<void> {
     if (!this.analyserNode) {
       return;
     }
 
-    this.analyserNodeCallback = undefined;
+    //this.analyserNodeCallback = undefined;
 
     // Disconnect the analyser node from its inputs and outputs.
     this.analyserNode.disconnect();
@@ -2909,51 +2918,51 @@ export class DemoMeetingApp
     this.analyserNode = undefined;
   }
 
-  startAudioPreview(): void {
-    this.setAudioPreviewPercent(0);
+  // startAudioPreview(): void {
+  //   this.setAudioPreviewPercent(0);
 
-    // Recreate.
-    if (this.analyserNode) {
-      // Disconnect the analyser node from its inputs and outputs.
-      this.analyserNode.disconnect();
-      this.analyserNode.removeOriginalInputs();
+  //   // Recreate.
+  //   if (this.analyserNode) {
+  //     // Disconnect the analyser node from its inputs and outputs.
+  //     this.analyserNode.disconnect();
+  //     this.analyserNode.removeOriginalInputs();
 
-      this.analyserNode = undefined;
-    }
+  //     this.analyserNode = undefined;
+  //   }
 
-    const analyserNode = this.audioVideo.createAnalyserNodeForAudioInput();
+  //   const analyserNode = this.audioVideo.createAnalyserNodeForAudioInput();
 
-    if (!analyserNode) {
-      return;
-    }
+  //   if (!analyserNode) {
+  //     return;
+  //   }
 
-    if (!analyserNode.getByteTimeDomainData) {
-      document.getElementById('audio-preview').parentElement.style.visibility = 'hidden';
-      return;
-    }
+    // if (!analyserNode.getByteTimeDomainData) {
+    //   document.getElementById('audio-preview').parentElement.style.visibility = 'hidden';
+    //   return;
+    // }
 
-    this.analyserNode = analyserNode;
-    const data = new Uint8Array(analyserNode.fftSize);
-    let frameIndex = 0;
-    this.analyserNodeCallback = () => {
-      if (frameIndex === 0) {
-        analyserNode.getByteTimeDomainData(data);
-        const lowest = 0.01;
-        let max = lowest;
-        for (const f of data) {
-          max = Math.max(max, (f - 128) / 128);
-        }
-        let normalized = (Math.log(lowest) - Math.log(max)) / Math.log(lowest);
-        let percent = Math.min(Math.max(normalized * 100, 0), 100);
-        this.setAudioPreviewPercent(percent);
-      }
-      frameIndex = (frameIndex + 1) % 2;
-      if (this.analyserNodeCallback) {
-        requestAnimationFrame(this.analyserNodeCallback);
-      }
-    };
-    requestAnimationFrame(this.analyserNodeCallback);
-  }
+  //   this.analyserNode = analyserNode;
+  //   const data = new Uint8Array(analyserNode.fftSize);
+  //   let frameIndex = 0;
+  //   this.analyserNodeCallback = () => {
+  //     if (frameIndex === 0) {
+  //       analyserNode.getByteTimeDomainData(data);
+  //       const lowest = 0.01;
+  //       let max = lowest;
+  //       for (const f of data) {
+  //         max = Math.max(max, (f - 128) / 128);
+  //       }
+  //       let normalized = (Math.log(lowest) - Math.log(max)) / Math.log(lowest);
+  //       let percent = Math.min(Math.max(normalized * 100, 0), 100);
+  //       this.setAudioPreviewPercent(percent);
+  //     }
+  //     frameIndex = (frameIndex + 1) % 2;
+  //     if (this.analyserNodeCallback) {
+  //       requestAnimationFrame(this.analyserNodeCallback);
+  //     }
+  //   };
+  //   requestAnimationFrame(this.analyserNodeCallback);
+  // }
 
   async openAudioOutputFromSelection(): Promise<void> {
     if (this.defaultBrowserBehavior.supportsSetSinkId()) {
@@ -3294,59 +3303,59 @@ export class DemoMeetingApp
     return await this.videoInputSelectionWithOptionalFilter(intrinsicDevice);
   }
 
-  private initContentShareDropDownItems(): void {
-    let item = document.getElementById('dropdown-item-content-share-screen-capture');
-    item.addEventListener('click', () => {
-      this.contentShareType = ContentShareType.ScreenCapture;
-      this.contentShareStart();
-    });
+  // private initContentShareDropDownItems(): void {
+  //   let item = document.getElementById('dropdown-item-content-share-screen-capture');
+  //   item.addEventListener('click', () => {
+  //     this.contentShareType = ContentShareType.ScreenCapture;
+  //     this.contentShareStart();
+  //   });
 
-    item = document.getElementById('dropdown-item-content-share-screen-test-video');
-    item.addEventListener('click', () => {
-      this.contentShareType = ContentShareType.VideoFile;
-      this.contentShareStart(DemoMeetingApp.testVideo);
-    });
+  //   item = document.getElementById('dropdown-item-content-share-screen-test-video');
+  //   item.addEventListener('click', () => {
+  //     this.contentShareType = ContentShareType.VideoFile;
+  //     this.contentShareStart(DemoMeetingApp.testVideo);
+  //   });
 
-    item = document.getElementById('dropdown-item-content-share-test-mono-audio-speech');
-    item.addEventListener('click', () => {
-      this.contentShareStartAudio('audio_file');
-    });
+  //   item = document.getElementById('dropdown-item-content-share-test-mono-audio-speech');
+  //   item.addEventListener('click', () => {
+  //     this.contentShareStartAudio('audio_file');
+  //   });
 
-    item = document.getElementById('dropdown-item-content-share-test-stereo-audio-speech');
-    item.addEventListener('click', () => {
-      this.contentShareStartAudio('stereo_audio_file');
-    });
-    if (!this.usingStereoMusicAudioProfile) {
-      item.style.display = 'none';
-    }
+  //   item = document.getElementById('dropdown-item-content-share-test-stereo-audio-speech');
+  //   item.addEventListener('click', () => {
+  //     this.contentShareStartAudio('stereo_audio_file');
+  //   });
+  //   if (!this.usingStereoMusicAudioProfile) {
+  //     item.style.display = 'none';
+  //   }
 
-    item = document.getElementById('dropdown-item-content-share-test-stereo-audio-tone');
-    item.addEventListener('click', () => {
-      this.contentShareStartAudio();
-    });
-    if (!this.usingStereoMusicAudioProfile) {
-      item.style.display = 'none';
-    }
+  //   item = document.getElementById('dropdown-item-content-share-test-stereo-audio-tone');
+  //   item.addEventListener('click', () => {
+  //     this.contentShareStartAudio();
+  //   });
+  //   if (!this.usingStereoMusicAudioProfile) {
+  //     item.style.display = 'none';
+  //   }
 
-    document.getElementById('content-share-item').addEventListener('change', () => {
-      const fileList = document.getElementById('content-share-item') as HTMLInputElement;
-      const file = fileList.files[0];
-      if (!file) {
-        this.log('no content share selected');
-        return;
-      }
-      const url = URL.createObjectURL(file);
-      this.log(`content share selected: ${url}`);
-      this.contentShareType = ContentShareType.VideoFile;
-      this.contentShareStart(url);
-      fileList.value = '';
-      (document.getElementById('dropdown-item-content-share-file-item') as HTMLDivElement).click();
-    });
+  //   document.getElementById('content-share-item').addEventListener('change', () => {
+  //     const fileList = document.getElementById('content-share-item') as HTMLInputElement;
+  //     const file = fileList.files[0];
+  //     if (!file) {
+  //       this.log('no content share selected');
+  //       return;
+  //     }
+  //     const url = URL.createObjectURL(file);
+  //     this.log(`content share selected: ${url}`);
+  //     this.contentShareType = ContentShareType.VideoFile;
+  //     this.contentShareStart(url);
+  //     fileList.value = '';
+  //     (document.getElementById('dropdown-item-content-share-file-item') as HTMLDivElement).click();
+  //   });
 
-    document.getElementById('dropdown-item-content-share-stop').addEventListener('click', () => {
-      this.contentShareStop();
-    });
-  }
+  //   document.getElementById('dropdown-item-content-share-stop').addEventListener('click', () => {
+  //     this.contentShareStop();
+  //   });
+  // }
 
   private async playToStream(videoFile: HTMLVideoElement): Promise<MediaStream> {
     await videoFile.play();
@@ -3393,23 +3402,23 @@ export class DemoMeetingApp
     this.updateContentShareDropdown(true);
   }
 
-  private async contentShareStartAudio(audioPath: string | null = null) {
-    let mediaStream: MediaStream = null;
-    if (!audioPath) {
-      mediaStream = await this.synthesizeStereoTones(500, 1000);
-    } else {
-      mediaStream = await this.streamAudioFile(audioPath, true);
-    }
-    try {
-      // getDisplayMedia can throw.
-      await this.audioVideo.startContentShare(mediaStream);
-    } catch (e) {
-      this.meetingLogger?.error(`Could not start content share: ${e}`);
-      return;
-    }
-    this.toggleButton('button-content-share', 'on');
-    this.updateContentShareDropdown(true);
-  }
+  // private async contentShareStartAudio(audioPath: string | null = null) {
+  //   let mediaStream: MediaStream = null;
+  //   if (!audioPath) {
+  //     mediaStream = await this.synthesizeStereoTones(500, 1000);
+  //   } else {
+  //     mediaStream = await this.streamAudioFile(audioPath, true);
+  //   }
+  //   try {
+  //     // getDisplayMedia can throw.
+  //     await this.audioVideo.startContentShare(mediaStream);
+  //   } catch (e) {
+  //     this.meetingLogger?.error(`Could not start content share: ${e}`);
+  //     return;
+  //   }
+  //   this.toggleButton('button-content-share', 'on');
+  //   this.updateContentShareDropdown(true);
+  // }
 
   private async contentShareStop(): Promise<void> {
     this.audioVideo.stopContentShare();
