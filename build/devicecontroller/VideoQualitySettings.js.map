@@ -1,0 +1,1 @@
+{"version":3,"file":"VideoQualitySettings.js","sourceRoot":"","sources":["../../src/devicecontroller/VideoQualitySettings.ts"],"names":[],"mappings":";AAAA,qEAAqE;AACrE,sCAAsC;;AAEtC,MAAqB,oBAAoB;IAKvC,YAAY,UAAkB,EAAE,WAAmB,EAAE,cAAsB;QACzE,IAAI,CAAC,UAAU,GAAG,UAAU,CAAC;QAC7B,IAAI,CAAC,WAAW,GAAG,WAAW,CAAC;QAC/B,IAAI,CAAC,cAAc,GAAG,cAAc,CAAC;IACvC,CAAC;CACF;AAVD,uCAUC"}

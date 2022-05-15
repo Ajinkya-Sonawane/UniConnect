@@ -1,3 +1,7 @@
 /debug.js
 /node_modules
+<<<<<<< HEAD
+=======
+/dist
+>>>>>>> c017ade7566c2206ce09d0e2410b9bf3e896b1f6
 config.ts
