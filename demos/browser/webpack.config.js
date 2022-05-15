@@ -27,7 +27,8 @@ const csp = {
   // Script hashes/nonces are not emitted for script-src-elem, so just add unsafe-inline.
   'script-src-elem': "'self' 'unsafe-inline'",
   'worker-src': "'self' blob:",
-  'child-src': "'self' blob:",
+  'child-src': "'self' blob: ",
+  'frame-src': "'self' https://s3cloudproject.s3.amazonaws.com/WebRTCChat.html",
 };
 
 // Modify our basic CSP to allow several things:
@@ -54,6 +55,10 @@ if (!csp['script-src'].includes("'unsafe-eval'")) {
 
 // 5. Access to event ingestion gamma endpoint for testing and canaries.
 csp['connect-src'] += ' https://*.ingest.gchime.aws';
+
+// 6. Access to websocket
+csp['connect-src'] += ' wss://75ya1qy2u1.execute-api.us-west-2.amazonaws.com/websocket';
+
 
 module.exports = env => {
   console.info('Env:', JSON.stringify(env, null, 2));

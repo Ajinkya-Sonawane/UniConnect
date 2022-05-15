@@ -6,6 +6,8 @@ import './styleV2.scss';
 // import * as AmazonCognitoIdentity from 'amazon-cognito-identity-js';
 const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
 import {config} from './config';
+import { CSPMonitor } from 'amazon-chime-sdk-js';
+CSPMonitor.disable();
 
 // import {config} from './config';
 // const AWS = require('aws-sdk');
@@ -100,6 +102,7 @@ import {
 import SyntheticVideoDeviceFactory from './video/SyntheticVideoDeviceFactory';
 import { getPOSTLogger } from './util/MeetingLogger';
 
+
 // let SHOULD_EARLY_CONNECT = (() => {
 //   return document.location.search.includes('earlyConnect=1');
 // })();
@@ -110,6 +113,40 @@ let SHOULD_DIE_ON_FATALS = (() => {
   const fatalNo = document.location.search.includes('fatal=0');
   return fatalYes || (isLocal && !fatalNo);
 })();
+
+
+//webrtc functions conversion in TS
+const secret_configuration = new config();
+const webSocketConnection = secret_configuration.webSocketConnection;
+const turnServerIPAddress = secret_configuration.turnServerIPAddress;
+const turnServerPort = secret_configuration.turnServerPort;
+const turnServerUserName = secret_configuration.turnServerUserName;
+const turnServerPassword = secret_configuration.turnServerPassword;
+
+
+var cameraMode = "user";
+// var inBoundTimestampPrev = 0;
+// var inBoundBytesPrev = 0;
+// var outBoundTimestampPrev = 0;
+// var outBoundBytesPrev = 0;
+var callOrAnswerFlag = 0; // 0 for Call and 1 for Answer
+
+let existingTracks = [];
+
+let socket:any, localStream:any, connection:any, clientId = uuidv4(), channel:any;
+
+const configuration = {
+  iceServers: [
+        {
+            urls: 'stun:' + turnServerIPAddress + ':' + turnServerPort
+        },
+        {
+            urls: 'turn:' + turnServerIPAddress + ':' + turnServerPort,
+            username: turnServerUserName,
+            credential: turnServerPassword
+        }
+  ]
+}
 
 
 export let fatal: (e: Error) => void;
@@ -425,6 +462,7 @@ export class DemoMeetingApp
       // console.log(params.loginFlow);
       // if(params.loginFlow){
         this.switchToFlow("flow-login");
+        switchMobileCamera();
       // }
       // else if(params.registerFlow){
         // this.switchToFlow("flow-register");
@@ -469,7 +507,7 @@ export class DemoMeetingApp
       document.getElementById('stack').innerText = '' + e;
     }
 
-    this.switchToFlow('flow-fatal');
+    // this.switchToFlow('flow-fatal');
   }
 
   initParameters(): void {
@@ -596,10 +634,9 @@ export class DemoMeetingApp
       }
 
       let authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
-      let cognito_config = new config();
       let poolData = {
-            UserPoolId: cognito_config.userPoolId,
-            ClientId: cognito_config.clientID 
+            UserPoolId: secret_configuration.userPoolId,
+            ClientId: secret_configuration.clientID 
       }
 
       let userPool =  new AmazonCognitoIdentity.CognitoUserPool(poolData);
@@ -612,7 +649,7 @@ export class DemoMeetingApp
       cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
       var self = this;
       cognitoUser.authenticateUser(authenticationDetails, {
-          onSuccess: function (result) {
+          onSuccess: function (result:any) {
               var accessToken = result.getAccessToken().getJwtToken();
 
               /* Use the idToken for Logins Map when Federating User Pools with identity pools or when passing through an Authorization Header to an API Gateway Authorizer */
@@ -625,25 +662,35 @@ export class DemoMeetingApp
               console.log(x);
               document.cookie= x;
               console.log(document.cookie)
-              self.switchToFlow('flow-authenticate');
+              // self.switchToFlow('flow-authenticate');
+              self.switchToFlow('flow-index')
           },
 
-          onFailure: function(err) {
+          onFailure: function(err:any) {
               alert(err);
           },
       });
     });
     
+    document.getElementById("index_join_call").addEventListener("click",(e)=>{
+      e.preventDefault();
+      this.switchToFlow('flow-webRTC');
+    });
+
+    document.getElementById("index_join_group_call").addEventListener("click",(e)=>{
+      e.preventDefault();
+      this.switchToFlow('flow-authenticate');
+    });
+
     document.getElementById("signup").addEventListener("click",(e)=>{
       e.preventDefault();
       console.log("In SignUp");
       let name:string = (document.getElementById("register_name") as HTMLInputElement).value
       let email:string = (document.getElementById("register_email") as HTMLInputElement).value
       let password = (document.getElementById("register_password") as HTMLInputElement).value
-      let cognito_config = new config();
       let poolData = {
-          UserPoolId: cognito_config.userPoolId,
-          ClientId: cognito_config.clientID 
+          UserPoolId: secret_configuration.userPoolId,
+          ClientId: secret_configuration.clientID 
       }
       let userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
       let attributeList = [];
@@ -664,7 +711,7 @@ export class DemoMeetingApp
       attributeList.push(attributePersonalName);
 
       let cognitoUser;
-      userPool.signUp(email,password, attributeList, null, function(err, result){
+      userPool.signUp(email,password, attributeList, null, function(err:any, result:any){
           if (err) {
               alert(err);
               return;
@@ -676,6 +723,12 @@ export class DemoMeetingApp
           // redirectLoginPage()
       });
     });
+
+    document.getElementById("sendOfferButton").addEventListener("click",handleJoin);
+    document.getElementById("localVideo").addEventListener("click",switchMobileCamera);
+    document.getElementById("hangUpButton").addEventListener("click",disconnectRTCPeerConnection);
+    document.getElementById("sendMessageButton").addEventListener("click",sendMessageRTC);
+
 
     // document.getElementById("forgotPassword").addEventListener("click",forgotPassword)
 
@@ -2599,18 +2652,18 @@ export class DemoMeetingApp
       option.text = devices[i].label || `${genericName} ${i + 1}`;
       option.value = devices[i].deviceId;
     }
-    if (additionalOptions.length > 0) {
-      const separator = document.createElement('option');
-      separator.disabled = true;
-      separator.text = '──────────';
-      list.appendChild(separator);
-      for (const additionalOption of additionalOptions) {
-        const option = document.createElement('option');
-        list.appendChild(option);
-        option.text = additionalOption;
-        option.value = additionalOption;
-      }
-    }
+    // if (additionalOptions.length > 0) {
+    //   const separator = document.createElement('option');
+    //   separator.disabled = true;
+    //   separator.text = '──────────';
+    //   list.appendChild(separator);
+    //   for (const additionalOption of additionalOptions) {
+    //     const option = document.createElement('option');
+    //     list.appendChild(option);
+    //     option.text = additionalOption;
+    //     option.value = additionalOption;
+    //   }
+    // }
     if (!list.firstElementChild) {
       const option = document.createElement('option');
       option.text = 'Device selection unavailable';
@@ -3856,3 +3909,471 @@ window.addEventListener('click', event => {
     liveTranscriptionModal.style.display = 'none';
   }
 });
+
+// //webrtc functions conversion in TS
+
+// const webSocketConnection = "wss://75ya1qy2u1.execute-api.us-west-2.amazonaws.com/websocket";
+// const turnServerIPAddress = "34.226.247.2";
+// const turnServerPort = "3478";
+// const turnServerUserName = "ajinkya";
+// const turnServerPassword = "mypassword";
+
+// var cameraMode = "user";
+// var inBoundTimestampPrev = 0;
+// var inBoundBytesPrev = 0;
+// var outBoundTimestampPrev = 0;
+// var outBoundBytesPrev = 0;
+// var callOrAnswerFlag = 0; // 0 for Call and 1 for Answer
+
+// let existingTracks = [];
+
+// let socket:any, localStream:any, connection:any, clientId = uuidv4(), channel:any;
+
+// const configuration = {
+//   iceServers: [
+//         {
+//             urls: 'stun:' + turnServerIPAddress + ':' + turnServerPort
+//         },
+//         {
+//             urls: 'turn:' + turnServerIPAddress + ':' + turnServerPort,
+//             username: turnServerUserName,
+//             credential: turnServerPassword
+//         }
+//   ]
+// }
+
+disableAllButtons();
+  
+getLocalWebCamFeed();
+
+function handleJoin(){
+  if(callOrAnswerFlag == 0){
+      if(channel){
+      channel.close();
+      }
+      // if(connection === undefined){
+      //   connection = new RTCPeerConnection(configuration);
+      // }
+      // Create Data channel)
+      channel = connection.createDataChannel('channel', {});
+      setChannelEvents(channel);
+
+      // Create Offer
+      connection.createOffer().then(
+          (offer:any) => {
+              log('Sent The Offer.');
+
+              // Send Offer to other peer
+              socket.send(JSON.stringify(
+                  {
+                      action: 'onMessage',
+                      type: 'offer',
+                      data: offer,
+                      id: clientId
+                  }
+              ));
+
+              // Set Offer for negotiation
+              connection.setLocalDescription(offer);
+          },
+          (error:any) => {
+              log('Error when creating an offer.');
+              console.error(error);
+          }
+      );
+      callOrAnswerFlag = 1;
+  }
+  else{
+      // Create Answer
+      connection.createAnswer().then(
+                  (answer:any) => {
+                      log('Sent The Answer.');
+
+                      // Set Answer for negotiation
+                      connection.setLocalDescription(answer);
+
+                      // Send Answer to other peer
+                      socket.send(JSON.stringify(
+                          {
+                              action: 'onMessage',
+                              type: 'answer',
+                              data: answer,
+                              id: clientId
+                          }
+                      ));
+                  },
+                  (error:any) => {
+                      log('Error when creating an answer.');
+                      console.error(error);
+                  }
+              );
+      callOrAnswerFlag = 0;
+  }
+}
+
+function initiatSocketAndPeerConnection(stream:any){
+  (document.getElementById("localVideo") as HTMLMediaElement).srcObject = stream;
+  
+  if(typeof socket === 'undefined'){
+      connectToWebSocket();
+  }else{
+      stream.getTracks().forEach(function (track:any, index:any) {
+          connection.getSenders().find(function(s:any) {
+              if (s.track.kind == track.kind){
+                  s.replaceTrack(track);
+              }
+          });
+      });
+  }
+}
+
+function disableAllButtons(){
+  // document.getElementById("sendOfferButton").disabled = true;
+  // document.getElementById("answerButton").disabled = true;
+  // document.getElementById("sendMessageButton").disabled = true;
+  // document.getElementById("hangUpButton").disabled = true;
+}
+
+function sendMessageRTC(){
+  var messageText = (document.getElementById("messageInput") as HTMLInputElement).value; 
+
+  channel.send(JSON.stringify({
+      "message": messageText
+  }));
+
+  (document.getElementById("chatTextArea") as HTMLInputElement).value += messageText + '\n';
+}
+
+function disconnectRTCPeerConnection(){
+  connection.close();
+  window.location.reload();
+}
+
+function connectToWebSocket(){
+  socket = new WebSocket(webSocketConnection);
+  // Create WebRTC connection only if the socket connection is successful.
+  socket.onopen = function(event:any) {
+      log('WebSocket Connection Open.');
+      console.log('WebSocket Connection Open.');
+      createRTCPeerConnection();
+  };
+
+  // Handle messages recieved in socket
+  socket.onmessage = function(event:any) {
+      let jsonData = JSON.parse(event.data);
+
+      switch (jsonData.type){
+          case 'candidate':
+              handleCandidate(jsonData.data, jsonData.id);
+              break;
+          case 'offer':
+              handleOffer(jsonData.data, jsonData.id);
+              break;
+          case 'answer':
+              // alert('Received an offer');
+              callOrAnswerFlag = 1;
+              handleAnswer(jsonData.data, jsonData.id);
+              break;
+          default:
+              break
+      }
+  };
+
+  socket.onerror = function(event:any) {
+      console.error(event);
+      log('WebSocket Connection Error. Make sure web socket URL is correct and web socket server is up and running at - ' + webSocketConnection);
+  };
+
+  socket.onclose = function(event:any) {
+      log('WebSocket Connection Closed. Please Reload the page.');
+      // document.getElementById("sendOfferButton").disabled = true;
+      // document.getElementById("answerButton").disabled = true;
+  };
+}
+
+function log(message:any){
+  (document.getElementById("logs") as HTMLInputElement).value += message + '\n';
+}
+
+function getLocalWebCamFeed(){
+  // width: { ideal: 4096 },
+  // height: { ideal: 2160 } 
+
+  let constraints = {
+      audio: true,
+      video: {
+          facingMode: cameraMode
+          // width: { ideal: 1280 },
+          // height: { ideal: 720 }
+      }
+  } 
+
+  //navigator.getWebcam = (navigator.getUserMedia || navigator.webKitGetUserMedia || navigator.moxGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+  // navigator.mediaDevices.getUserMedia = (navigator.mediaDevices.getUserMedia || navigator.mediaDevices.webKitGetUserMedia || navigator.moxGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+  if (navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia(constraints)
+      .then(function (stream) {
+          localStream = stream;
+          initiatSocketAndPeerConnection(stream);
+      })
+      .catch(function (e) { log(e.name + ": " + e.message); });
+  }
+  else {
+      navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(
+          function (stream:any) {
+              localStream = stream;
+              initiatSocketAndPeerConnection(stream);
+          }, 
+          function () { log("Web cam is not accessible."); 
+      });
+  }
+}
+
+function createRTCPeerConnection(){
+  //pushStats();
+  connection = new RTCPeerConnection(configuration);
+  // Add both video and audio tracks to the connection
+  for (const track of localStream.getTracks()) {
+      log("Sending Stream.")
+      existingTracks.push(connection.addTrack(track, localStream));
+  }
+
+  // This event handles displaying remote video and audio feed from the other peer
+  connection.ontrack = (event:any) => {
+      log("Recieved Stream.");
+      (document.getElementById("remoteVideo") as HTMLMediaElement).srcObject = event.streams[0];
+  }
+
+  // This event handles the received data channel from the other peer
+  connection.ondatachannel = function (event:any) {
+      log("Recieved a DataChannel.")
+      channel = event.channel;
+      setChannelEvents(channel);
+      (document.getElementById("sendMessageButton") as HTMLButtonElement).disabled = false;
+  };
+
+  // This event sends the ice candidates generated from Stun or Turn server to the Receiver over web socket
+  connection.onicecandidate = (event:any) => {
+      if (event.candidate) {
+          log("Sending Ice Candidate - " + event.candidate.candidate);
+
+          socket.send(JSON.stringify(
+              {
+                  action: 'onMessage',
+                  type: 'candidate',
+                  data: event.candidate,
+                  id: clientId
+              }
+          ));
+      }
+  }
+
+  // This event logs messages and handles button state according to WebRTC connection state changes
+  connection.onconnectionstatechange = function(event:any) {
+      switch(connection.connectionState) {
+          case "connected":
+              log("Web RTC Peer Connection Connected.");
+              // document.getElementById("answerButton").disabled = true;
+              // document.getElementById("sendOfferButton").disabled = true;
+              (document.getElementById("hangUpButton") as HTMLButtonElement).disabled = false;
+              (document.getElementById("sendMessageButton") as HTMLButtonElement).disabled = false;
+              break;
+          case "disconnected":
+              log("Web RTC Peer Connection Disconnected. Please reload the page to reconnect.");
+              disableAllButtons();
+              window.location.reload();
+              break;
+          case "failed":
+              log("Web RTC Peer Connection Failed. Please reload the page to reconnect.");
+              console.log(event);
+              disableAllButtons();
+              break;
+          case "closed":
+              log("Web RTC Peer Connection Failed. Please reload the page to reconnect.");
+              disableAllButtons();
+              break;
+          default:
+              break;
+      }
+  }
+
+  log("Web RTC Peer Connection Created.");
+  // document.getElementById("sendOfferButton").disabled = false;
+}
+
+// function createAndSendOffer(){
+//   if(channel){
+//       channel.close();
+//   }
+
+//   // Create Data channel
+//   channel = connection.createDataChannel('channel', {});
+//   setChannelEvents(channel);
+
+//   // Create Offer
+//   connection.createOffer().then(
+//       (offer:any) => {
+//           log('Sent The Offer.');
+
+//           // Send Offer to other peer
+//           socket.send(JSON.stringify(
+//               {
+//                   action: 'onMessage',
+//                   type: 'offer',
+//                   data: offer,
+//                   id: clientId
+//               }
+//           ));
+
+//           // Set Offer for negotiation
+//           connection.setLocalDescription(offer);
+//       },
+//       (error:any) => {
+//           log('Error when creating an offer.');
+//           console.error(error);
+//       }
+//   );
+// }
+
+// function createAndSendAnswer(){
+
+//   // Create Answer
+//   connection.createAnswer().then(
+//       (answer:any) => {
+//           log('Sent The Answer.');
+
+//           // Set Answer for negotiation
+//           connection.setLocalDescription(answer);
+
+//           // Send Answer to other peer
+//           socket.send(JSON.stringify(
+//               {
+//                   action: 'onMessage',
+//                   type: 'answer',
+//                   data: answer,
+//                   id: clientId
+//               }
+//           ));
+//       },
+//       (error:any) => {
+//           log('Error when creating an answer.');
+//           console.error(error);
+//       }
+//   );
+// }
+
+function handleCandidate(candidate:any, id:any){
+
+  // Avoid accepting the ice candidate if this is a message created by the current peer
+  if(clientId != id){
+      log("Adding Ice Candidate - " + candidate.candidate);
+      connection.addIceCandidate(new RTCIceCandidate(candidate));
+  }
+}
+
+function handleOffer(offer:any, id:any){
+
+  // Avoid accepting the Offer if this is a message created by the current peer
+  if(clientId != id){
+      log("Recieved The Offer.");
+      callOrAnswerFlag = 1;
+      connection.setRemoteDescription(new RTCSessionDescription(offer));
+      // document.getElementById("answerButton").disabled = false;
+      // document.getElementById("sendOfferButton").disabled = true;
+  }
+}
+
+function handleAnswer(answer:any, id:any){
+
+  // Avoid accepting the Answer if this is a message created by the current peer
+  if(clientId != id){
+      log("Recieved The Answer");
+      connection.setRemoteDescription(new RTCSessionDescription(answer));
+  }
+}
+
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+  });
+}
+
+function setChannelEvents(channel:any) {
+  channel.onmessage = function (event:any) {
+      var data = JSON.parse(event.data);
+      (document.getElementById("chatTextArea") as HTMLInputElement).value += data.message + '\n';
+  };
+
+  channel.onerror = function (event:any) {
+      log('DataChannel Error.');
+      console.error(event)
+  };
+
+  channel.onclose = function (event:any) {
+      log('DataChannel Closed.');
+      disableAllButtons();
+  };
+}
+
+function switchMobileCamera(){
+  if (cameraMode == "user") {
+      cameraMode = "environment";
+  } else {
+      cameraMode = "user";
+  }
+
+  getLocalWebCamFeed();
+}
+
+// function pushStats(){
+//   let inBoundStatsDiv = document.getElementById("inBoundstats");
+//   let outBoundstatsDiv = document.getElementById("outBoundstats");
+
+//   window.setInterval(function() {
+//       connection.getStats(null).then((stats:any) => {
+//           let inBoundBitrate:any;
+//           let outBoundBitrate:any;
+
+//           stats.forEach((report:any) => {
+//               if (report.type === 'inbound-rtp' && report.mediaType === 'video'){
+//                   let now = report.timestamp;
+//                   let bytes = report.bytesReceived;
+//                   if (inBoundTimestampPrev) {
+//                       inBoundBitrate = 0.125 * (8 * (bytes - inBoundBytesPrev) / (now - inBoundTimestampPrev));
+//                       inBoundBitrate = Math.floor(inBoundBitrate);
+//                   }
+//                   inBoundBytesPrev = bytes;
+//                   inBoundTimestampPrev = now;
+//               }
+//               else if(report.type === 'outbound-rtp' && report.mediaType === 'video'){
+//                   let now = report.timestamp;
+//                   let bytes = report.bytesSent;
+//                   if (outBoundTimestampPrev) {
+//                       outBoundBitrate = 0.125 * (8 * (bytes - outBoundBytesPrev) / (now - outBoundTimestampPrev));
+//                       outBoundBitrate = Math.floor(outBoundBitrate);
+//                   }
+//                   outBoundBytesPrev = bytes;
+//                   outBoundTimestampPrev = now;
+//               }
+
+//               if(isNaN(inBoundBitrate)){
+//                   inBoundBitrate = 0;
+//               }
+
+//               if(isNaN(outBoundBitrate)){
+//                   outBoundBitrate = 0;
+//               }
+
+//               let inboundVideoWidth = (document.getElementById("remoteVideo") as HTMLVideoElement).videoWidth;
+//               let inboundVideoHeight = (document.getElementById("remoteVideo") as HTMLVideoElement).videoHeight;
+//               inBoundStatsDiv.innerHTML = `<strong>Bitrate: </strong>${inBoundBitrate} KB/sec<br/><strong>Video dimensions: </strong> ${inboundVideoWidth}x${inboundVideoHeight}px<br/>`;
+
+//               let outboundVideoWidth = (document.getElementById("localVideo") as HTMLVideoElement).videoWidth;
+//               let outboundVideoHeight = (document.getElementById("localVideo") as HTMLVideoElement).videoHeight;
+//               outBoundstatsDiv.innerHTML = `<strong>Bitrate: </strong>${outBoundBitrate} KB/sec<br/><strong>Video dimensions: </strong> ${outboundVideoWidth}x${outboundVideoHeight}px<br/>`;
+//           });
+          
+//       });
+//   }, 1000);
+//}
