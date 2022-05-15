@@ -4,6 +4,8 @@
 import './styleV2.scss';
 
 // import * as AmazonCognitoIdentity from 'amazon-cognito-identity-js';
+const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
+import {config} from './config';
 
 // import {config} from './config';
 // const AWS = require('aws-sdk');
@@ -585,99 +587,96 @@ export class DemoMeetingApp
       this.switchToFlow("flow-login");
     });
 
-    // document.getElementById("signIn").addEventListener("click",(e)=>{
-      // e.preventDefault();
+    document.getElementById("signIn").addEventListener("click",(e)=>{
+      e.preventDefault();
 
-      // let authenticationData = {
-      //   Username: (document.getElementById("email") as HTMLInputElement).value,
-      //   Password : (document.getElementById("password") as HTMLInputElement).value
-      // }
-      
-      // let authenticationDetails = new cognitoIdentity.AuthenticationDetails(authenticationData)
-      // // poolData = {
-      // //       UserPoolId: config.userPoolId,
-      // //       ClientId: config.cognito.clientID 
-      // // }
-      // let cognito_config = new config();
-      //   let poolData = {
-      //       UserPoolId: cognito_config.userPoolId,
-      //       ClientId: cognito_config.clientID 
-      //   }
+      let authenticationData = {
+        Username: (document.getElementById("login_email") as HTMLInputElement).value,
+        Password : (document.getElementById("login_password") as HTMLInputElement).value
+      }
 
-      // let userPool = new cognitoIdentity.CognitoUserPool(poolData);
-      // let userData = {
-      //   Username: (document.getElementById("email") as HTMLInputElement).value,
-      //   Pool: userPool
-      // }
+      let authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
+      let cognito_config = new config();
+      let poolData = {
+            UserPoolId: cognito_config.userPoolId,
+            ClientId: cognito_config.clientID 
+      }
 
-      // let cognitoUser = new cognitoIdentity.CognitoUser(userData);
+      let userPool =  new AmazonCognitoIdentity.CognitoUserPool(poolData);
+      let userData = {
+        Username: (document.getElementById("login_email") as HTMLInputElement).value,
+        Pool: userPool
+      }
 
-      // cognitoUser = new cognitoIdentity.CognitoUser(userData);
-      // cognitoUser.authenticateUser(authenticationDetails, {
-      //     onSuccess: function (result) {
-      //         var accessToken = result.getAccessToken().getJwtToken();
+      let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+      cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+      var self = this;
+      cognitoUser.authenticateUser(authenticationDetails, {
+          onSuccess: function (result) {
+              var accessToken = result.getAccessToken().getJwtToken();
 
-      //         /* Use the idToken for Logins Map when Federating User Pools with identity pools or when passing through an Authorization Header to an API Gateway Authorizer */
-      //         // var idToken = result.idToken.jwtToken;
-      //         console.log(accessToken)
-      //         console.log(cognitoUser)
-      //         var d=new Date()
-      //         d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
-      //         var x = "email="+(document.getElementById("email") as HTMLInputElement).value+"; expires="+d.toUTCString();
-      //         console.log(x);
-      //         document.cookie= x;
-      //         console.log(document.cookie)
-      //         // redirectMainPage()
-      //     },
+              /* Use the idToken for Logins Map when Federating User Pools with identity pools or when passing through an Authorization Header to an API Gateway Authorizer */
+              // var idToken = result.idToken.jwtToken;
+              console.log(accessToken)
+              console.log(cognitoUser)
+              var d=new Date()
+              d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
+              var x = "email="+(document.getElementById("login_email") as HTMLInputElement).value+"; expires="+d.toUTCString();
+              console.log(x);
+              document.cookie= x;
+              console.log(document.cookie)
+              self.switchToFlow('flow-authenticate');
+          },
 
-      //     onFailure: function(err) {
-      //         alert(err);
-      //     },
-      // });
+          onFailure: function(err) {
+              alert(err);
+          },
+      });
+    });
+    
+    document.getElementById("signup").addEventListener("click",(e)=>{
+      e.preventDefault();
+      console.log("In SignUp");
+      let name:string = (document.getElementById("register_name") as HTMLInputElement).value
+      let email:string = (document.getElementById("register_email") as HTMLInputElement).value
+      let password = (document.getElementById("register_password") as HTMLInputElement).value
+      let cognito_config = new config();
+      let poolData = {
+          UserPoolId: cognito_config.userPoolId,
+          ClientId: cognito_config.clientID 
+      }
+      let userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+      let attributeList = [];
+      let dataEmail = {
+          Name:'email',
+          Value: email
+      }
 
+      let dataPersonalName = {
+          Name: 'name',
+          Value: name
+      }
 
+      let attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+      let attributePersonalName = new AmazonCognitoIdentity.CognitoUserAttribute(dataPersonalName);
 
+      attributeList.push(attributeEmail);
+      attributeList.push(attributePersonalName);
 
-      // e.preventDefault()
-        // let name:string = (document.getElementById("name") as HTMLInputElement).value
-        // let email:string = (document.getElementById("email") as HTMLInputElement).value
-        // let password = (document.getElementById("password") as HTMLInputElement).value
-        // let cognito_config = new config();
-        // let poolData = {
-        //     UserPoolId: cognito_config.userPoolId,
-        //     ClientId: cognito_config.clientID 
-        // }
-        // let userPool = cognitoIdentity.CognitoUserPool(poolData);
-        // let attributeList = [];
-        // let dataEmail = {
-        //     Name:'email',
-        //     Value: email
-        // }
+      let cognitoUser;
+      userPool.signUp(email,password, attributeList, null, function(err, result){
+          if (err) {
+              alert(err);
+              return;
+          }
+          cognitoUser = result.user;
+          console.log('user name is ' + cognitoUser.getUsername());
+          console.log("This works !!!!");
+          console.log(result);
+          // redirectLoginPage()
+      });
+    });
 
-        // let dataPersonalName = {
-        //     Name: 'name',
-        //     Value: name
-        // }
-
-        // let attributeEmail = new cognitoIdentity.CognitoUserAttribute(dataEmail);
-        // let attributePersonalName = new cognitoIdentity.CognitoUserAttribute(dataPersonalName);
-
-        // attributeList.push(attributeEmail);
-        // attributeList.push(attributePersonalName);
-
-        // let cognitoUser;
-        // userPool.signUp(email,password, attributeList, null, function(err, result){
-        //     if (err) {
-        //         alert(err);
-        //         return;
-        //     }
-        //     cognitoUser = result.user;
-        //     console.log('user name is ' + cognitoUser.getUsername());
-        //     console.log("This works !!!!");
-        //     console.log(result);
-        //     // redirectLoginPage()
-        // });
-    // });
     // document.getElementById("forgotPassword").addEventListener("click",forgotPassword)
 
     // if (!this.defaultBrowserBehavior.supportDownlinkBandwidthEstimation()) {
