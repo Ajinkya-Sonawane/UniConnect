@@ -3,6 +3,14 @@
 
 import './styleV2.scss';
 
+// import * as AmazonCognitoIdentity from 'amazon-cognito-identity-js';
+const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
+import {config} from './config';
+
+// import {config} from './config';
+// const AWS = require('aws-sdk');
+// const cognitoIdentity = new AWS.CognitoIdentity();
+
 import {
   ApplicationMetadata,
   AsyncScheduler,
@@ -112,6 +120,11 @@ declare global {
     webkitAudioContext: typeof AudioContext
   }
 }
+
+// let params = {
+//   loginFlow: true,
+//   registerFlow: false
+// }
 
 // Support a set of query parameters to allow for testing pre-release versions of
 // Amazon Voice Focus. If none of these parameters are supplied, the SDK default
@@ -400,24 +413,40 @@ export class DemoMeetingApp
       return;
     }
 
-    (document.getElementById('sdk-version') as HTMLSpanElement).innerText =
+    // this.switchToFlow("flow-login")
+    // if (document.cookie == ""){
+    // }
+    // else{
+      (document.getElementById('sdk-version') as HTMLSpanElement).innerText =
       'amazon-chime-sdk-js@' + Versioning.sdkVersion;
-    this.initEventListeners();
-    this.initParameters();
+      this.initEventListeners();
+      this.initParameters();
+
+      // console.log(params.loginFlow);
+      // if(params.loginFlow){
+        this.switchToFlow("flow-login");
+      // }
+      // else if(params.registerFlow){
+        // this.switchToFlow("flow-register");
+      // }
+
+      // this.switchToFlow("flow-login");
     // this.setMediaRegion();
-    if (this.isRecorder() || this.isBroadcaster()) {
-      AsyncScheduler.nextTick(async () => {
-        this.meeting = new URL(window.location.href).searchParams.get('m');
-        this.name = this.isRecorder() ? '«Meeting Recorder»' : '«Meeting Broadcaster»';
-        await this.authenticate();
-        await this.openAudioOutputFromSelection();
-        await this.join();
-        this.displayButtonStates();
-        this.switchToFlow('flow-meeting');
-      });
-    } else {
-      this.switchToFlow('flow-authenticate');
-    }
+    // if (this.isRecorder() || this.isBroadcaster()) {
+    //   AsyncScheduler.nextTick(async () => {
+    //     this.meeting = new URL(window.location.href).searchParams.get('m');
+    //     this.name = this.isRecorder() ? '«Meeting Recorder»' : '«Meeting Broadcaster»';
+    //     await this.authenticate();
+    //     await this.openAudioOutputFromSelection();
+    //     await this.join();
+    //     this.displayButtonStates();
+    //     this.switchToFlow('flow-meeting');
+    //   });
+    // } else {
+    //   this.switchToFlow('flow-authenticate');
+    // }
+
+    // }
   }
 
   /**
@@ -545,6 +574,110 @@ export class DemoMeetingApp
     if (!this.defaultBrowserBehavior.hasChromiumWebRTC()) {
       // (document.getElementById('simulcast') as HTMLInputElement).disabled = true;
     }
+
+    document.getElementById("registerButton").addEventListener("click",(e)=>{
+      e.preventDefault();
+      // params.loginFlow = false;
+      this.switchToFlow("flow-register");
+    });
+
+    document.getElementById("loginButton").addEventListener("click",(e)=>{
+      e.preventDefault();
+      // params.loginFlow = false;
+      this.switchToFlow("flow-login");
+    });
+
+    document.getElementById("signIn").addEventListener("click",(e)=>{
+      e.preventDefault();
+
+      let authenticationData = {
+        Username: (document.getElementById("login_email") as HTMLInputElement).value,
+        Password : (document.getElementById("login_password") as HTMLInputElement).value
+      }
+
+      let authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
+      let cognito_config = new config();
+      let poolData = {
+            UserPoolId: cognito_config.userPoolId,
+            ClientId: cognito_config.clientID 
+      }
+
+      let userPool =  new AmazonCognitoIdentity.CognitoUserPool(poolData);
+      let userData = {
+        Username: (document.getElementById("login_email") as HTMLInputElement).value,
+        Pool: userPool
+      }
+
+      let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+      cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+      var self = this;
+      cognitoUser.authenticateUser(authenticationDetails, {
+          onSuccess: function (result:any) {
+              var accessToken = result.getAccessToken().getJwtToken();
+
+              /* Use the idToken for Logins Map when Federating User Pools with identity pools or when passing through an Authorization Header to an API Gateway Authorizer */
+              // var idToken = result.idToken.jwtToken;
+              console.log(accessToken)
+              console.log(cognitoUser)
+              var d=new Date()
+              d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
+              var x = "email="+(document.getElementById("login_email") as HTMLInputElement).value+"; expires="+d.toUTCString();
+              console.log(x);
+              document.cookie= x;
+              console.log(document.cookie)
+              self.switchToFlow('flow-authenticate');
+          },
+
+          onFailure: function(err:any) {
+              alert(err);
+          },
+      });
+    });
+    
+    document.getElementById("signup").addEventListener("click",(e)=>{
+      e.preventDefault();
+      console.log("In SignUp");
+      let name:string = (document.getElementById("register_name") as HTMLInputElement).value
+      let email:string = (document.getElementById("register_email") as HTMLInputElement).value
+      let password = (document.getElementById("register_password") as HTMLInputElement).value
+      let cognito_config = new config();
+      let poolData = {
+          UserPoolId: cognito_config.userPoolId,
+          ClientId: cognito_config.clientID 
+      }
+      let userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+      let attributeList = [];
+      let dataEmail = {
+          Name:'email',
+          Value: email
+      }
+
+      let dataPersonalName = {
+          Name: 'name',
+          Value: name
+      }
+
+      let attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+      let attributePersonalName = new AmazonCognitoIdentity.CognitoUserAttribute(dataPersonalName);
+
+      attributeList.push(attributeEmail);
+      attributeList.push(attributePersonalName);
+
+      let cognitoUser;
+      userPool.signUp(email,password, attributeList, null, function(err:any, result:any){
+          if (err) {
+              alert(err);
+              return;
+          }
+          cognitoUser = result.user;
+          console.log('user name is ' + cognitoUser.getUsername());
+          console.log("This works !!!!");
+          console.log(result);
+          // redirectLoginPage()
+      });
+    });
+
+    // document.getElementById("forgotPassword").addEventListener("click",forgotPassword)
 
     // if (!this.defaultBrowserBehavior.supportDownlinkBandwidthEstimation()) {
     //   (document.getElementById('priority-downlink-policy') as HTMLInputElement).disabled = true;
@@ -3449,6 +3582,14 @@ export class DemoMeetingApp
   //   document.getElementById('dropdown-item-content-share-file-item').style.display = enabled ? 'none' : 'block';
   //   document.getElementById('dropdown-item-content-share-stop').style.display = enabled ? 'block' : 'none';
   // }
+
+  isLogin(): boolean {
+    return new URL(window.location.href).searchParams.get('login') === 'true';
+  }
+
+  isRegister(): boolean {
+    return new URL(window.location.href).searchParams.get('register') === 'true';
+  }
 
   isRecorder(): boolean {
     return new URL(window.location.href).searchParams.get('record') === 'true';

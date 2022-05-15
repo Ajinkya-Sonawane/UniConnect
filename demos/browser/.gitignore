@@ -1,2 +1,4 @@
 /debug.js
 /node_modules
+/dist
+config.ts
