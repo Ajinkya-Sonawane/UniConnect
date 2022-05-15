@@ -3,6 +3,12 @@
 
 import './styleV2.scss';
 
+// import * as AmazonCognitoIdentity from 'amazon-cognito-identity-js';
+
+// import {config} from './config';
+// const AWS = require('aws-sdk');
+// const cognitoIdentity = new AWS.CognitoIdentity();
+
 import {
   ApplicationMetadata,
   AsyncScheduler,
@@ -578,6 +584,101 @@ export class DemoMeetingApp
       // params.loginFlow = false;
       this.switchToFlow("flow-login");
     });
+
+    // document.getElementById("signIn").addEventListener("click",(e)=>{
+      // e.preventDefault();
+
+      // let authenticationData = {
+      //   Username: (document.getElementById("email") as HTMLInputElement).value,
+      //   Password : (document.getElementById("password") as HTMLInputElement).value
+      // }
+      
+      // let authenticationDetails = new cognitoIdentity.AuthenticationDetails(authenticationData)
+      // // poolData = {
+      // //       UserPoolId: config.userPoolId,
+      // //       ClientId: config.cognito.clientID 
+      // // }
+      // let cognito_config = new config();
+      //   let poolData = {
+      //       UserPoolId: cognito_config.userPoolId,
+      //       ClientId: cognito_config.clientID 
+      //   }
+
+      // let userPool = new cognitoIdentity.CognitoUserPool(poolData);
+      // let userData = {
+      //   Username: (document.getElementById("email") as HTMLInputElement).value,
+      //   Pool: userPool
+      // }
+
+      // let cognitoUser = new cognitoIdentity.CognitoUser(userData);
+
+      // cognitoUser = new cognitoIdentity.CognitoUser(userData);
+      // cognitoUser.authenticateUser(authenticationDetails, {
+      //     onSuccess: function (result) {
+      //         var accessToken = result.getAccessToken().getJwtToken();
+
+      //         /* Use the idToken for Logins Map when Federating User Pools with identity pools or when passing through an Authorization Header to an API Gateway Authorizer */
+      //         // var idToken = result.idToken.jwtToken;
+      //         console.log(accessToken)
+      //         console.log(cognitoUser)
+      //         var d=new Date()
+      //         d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
+      //         var x = "email="+(document.getElementById("email") as HTMLInputElement).value+"; expires="+d.toUTCString();
+      //         console.log(x);
+      //         document.cookie= x;
+      //         console.log(document.cookie)
+      //         // redirectMainPage()
+      //     },
+
+      //     onFailure: function(err) {
+      //         alert(err);
+      //     },
+      // });
+
+
+
+
+      // e.preventDefault()
+        // let name:string = (document.getElementById("name") as HTMLInputElement).value
+        // let email:string = (document.getElementById("email") as HTMLInputElement).value
+        // let password = (document.getElementById("password") as HTMLInputElement).value
+        // let cognito_config = new config();
+        // let poolData = {
+        //     UserPoolId: cognito_config.userPoolId,
+        //     ClientId: cognito_config.clientID 
+        // }
+        // let userPool = cognitoIdentity.CognitoUserPool(poolData);
+        // let attributeList = [];
+        // let dataEmail = {
+        //     Name:'email',
+        //     Value: email
+        // }
+
+        // let dataPersonalName = {
+        //     Name: 'name',
+        //     Value: name
+        // }
+
+        // let attributeEmail = new cognitoIdentity.CognitoUserAttribute(dataEmail);
+        // let attributePersonalName = new cognitoIdentity.CognitoUserAttribute(dataPersonalName);
+
+        // attributeList.push(attributeEmail);
+        // attributeList.push(attributePersonalName);
+
+        // let cognitoUser;
+        // userPool.signUp(email,password, attributeList, null, function(err, result){
+        //     if (err) {
+        //         alert(err);
+        //         return;
+        //     }
+        //     cognitoUser = result.user;
+        //     console.log('user name is ' + cognitoUser.getUsername());
+        //     console.log("This works !!!!");
+        //     console.log(result);
+        //     // redirectLoginPage()
+        // });
+    // });
+    // document.getElementById("forgotPassword").addEventListener("click",forgotPassword)
 
     // if (!this.defaultBrowserBehavior.supportDownlinkBandwidthEstimation()) {
     //   (document.getElementById('priority-downlink-policy') as HTMLInputElement).disabled = true;

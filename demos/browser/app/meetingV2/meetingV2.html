@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
   <title>UniConnect</title>
+
+  <!-- https://cdn.jsdelivr.net/gh/chirag-rathi/uni-connect-aws-cognito-dependency/ -->
+
+  <script src="https://cdn.jsdelivr.net/gh/chirag-rathi/uni-connect-aws-cognito-dependency/amazon-cognito-auth.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/chirag-rathi/uni-connect-aws-cognito-dependency/amazon-cognito-auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/chirag-rathi/uni-connect-aws-cognito-dependency/aws-cognito-sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/chirag-rathi/uni-connect-aws-cognito-dependency/amazon-cognito-identity.min.js"></script> 
+
+   <!-- <script src="app/meetingV2/config.js"></script>  -->
 </head>
 <body>
 
@@ -765,8 +774,19 @@
 </body>
 
 <script>
+
+let config = {
+  cognito:
+  {
+  userPoolId : 'us-east-1_jiisYJwoj',
+        region: 'us-east-1',
+        clientID: '3c854csckcici49okol1c1hc4f'
+
+}
+}
+
   document.getElementById("signIn").addEventListener("click",signIn)
-  document.getElementById("forgotPassword").addEventListener("click",forgotPassword)
+  // document.getElementById("forgotPassword").addEventListener("click",forgotPassword)
 
   function redirectMainPage(){
     window.location.href = "index.html"
@@ -808,7 +828,7 @@
             console.log(x);
             document.cookie= x;
             console.log(document.cookie)
-            redirectMainPage()
+            // redirectMainPage()
         },
 
         onFailure: function(err) {
