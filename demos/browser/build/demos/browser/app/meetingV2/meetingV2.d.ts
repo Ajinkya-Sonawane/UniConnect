@@ -240,6 +240,8 @@ export declare class DemoMeetingApp implements AudioVideoObserver, DeviceChangeO
     private videoFilterToProcessor;
     private videoInputSelectionWithOptionalFilter;
     private videoInputSelectionToDevice;
+    isLogin(): boolean;
+    isRegister(): boolean;
     isRecorder(): boolean;
     isBroadcaster(): boolean;
     isAbortingOnReconnect(): boolean;
