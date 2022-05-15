@@ -6,11 +6,8 @@ import './styleV2.scss';
 // import * as AmazonCognitoIdentity from 'amazon-cognito-identity-js';
 const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
 import {config} from './config';
-<<<<<<< HEAD
 import { CSPMonitor } from 'amazon-chime-sdk-js';
 CSPMonitor.disable();
-=======
->>>>>>> c017ade7566c2206ce09d0e2410b9bf3e896b1f6
 
 // import {config} from './config';
 // const AWS = require('aws-sdk');
@@ -465,10 +462,7 @@ export class DemoMeetingApp
       // console.log(params.loginFlow);
       // if(params.loginFlow){
         this.switchToFlow("flow-login");
-<<<<<<< HEAD
         switchMobileCamera();
-=======
->>>>>>> c017ade7566c2206ce09d0e2410b9bf3e896b1f6
       // }
       // else if(params.registerFlow){
         // this.switchToFlow("flow-register");
@@ -640,16 +634,9 @@ export class DemoMeetingApp
       }
 
       let authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
-<<<<<<< HEAD
       let poolData = {
             UserPoolId: secret_configuration.userPoolId,
             ClientId: secret_configuration.clientID 
-=======
-      let cognito_config = new config();
-      let poolData = {
-            UserPoolId: cognito_config.userPoolId,
-            ClientId: cognito_config.clientID 
->>>>>>> c017ade7566c2206ce09d0e2410b9bf3e896b1f6
       }
 
       let userPool =  new AmazonCognitoIdentity.CognitoUserPool(poolData);
@@ -675,12 +662,8 @@ export class DemoMeetingApp
               console.log(x);
               document.cookie= x;
               console.log(document.cookie)
-<<<<<<< HEAD
               // self.switchToFlow('flow-authenticate');
               self.switchToFlow('flow-index')
-=======
-              self.switchToFlow('flow-authenticate');
->>>>>>> c017ade7566c2206ce09d0e2410b9bf3e896b1f6
           },
 
           onFailure: function(err:any) {
@@ -689,7 +672,6 @@ export class DemoMeetingApp
       });
     });
     
-<<<<<<< HEAD
     document.getElementById("index_join_call").addEventListener("click",(e)=>{
       e.preventDefault();
       this.switchToFlow('flow-webRTC');
@@ -700,24 +682,15 @@ export class DemoMeetingApp
       this.switchToFlow('flow-authenticate');
     });
 
-=======
->>>>>>> c017ade7566c2206ce09d0e2410b9bf3e896b1f6
     document.getElementById("signup").addEventListener("click",(e)=>{
       e.preventDefault();
       console.log("In SignUp");
       let name:string = (document.getElementById("register_name") as HTMLInputElement).value
       let email:string = (document.getElementById("register_email") as HTMLInputElement).value
       let password = (document.getElementById("register_password") as HTMLInputElement).value
-<<<<<<< HEAD
       let poolData = {
           UserPoolId: secret_configuration.userPoolId,
           ClientId: secret_configuration.clientID 
-=======
-      let cognito_config = new config();
-      let poolData = {
-          UserPoolId: cognito_config.userPoolId,
-          ClientId: cognito_config.clientID 
->>>>>>> c017ade7566c2206ce09d0e2410b9bf3e896b1f6
       }
       let userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
       let attributeList = [];
@@ -751,15 +724,12 @@ export class DemoMeetingApp
       });
     });
 
-<<<<<<< HEAD
     document.getElementById("sendOfferButton").addEventListener("click",handleJoin);
     document.getElementById("localVideo").addEventListener("click",switchMobileCamera);
     document.getElementById("hangUpButton").addEventListener("click",disconnectRTCPeerConnection);
     document.getElementById("sendMessageButton").addEventListener("click",sendMessageRTC);
 
 
-=======
->>>>>>> c017ade7566c2206ce09d0e2410b9bf3e896b1f6
     // document.getElementById("forgotPassword").addEventListener("click",forgotPassword)
 
     // if (!this.defaultBrowserBehavior.supportDownlinkBandwidthEstimation()) {
@@ -3938,7 +3908,6 @@ window.addEventListener('click', event => {
   if (event.target === liveTranscriptionModal) {
     liveTranscriptionModal.style.display = 'none';
   }
-<<<<<<< HEAD
 });
 
 // //webrtc functions conversion in TS
@@ -4408,6 +4377,3 @@ function switchMobileCamera(){
 //       });
 //   }, 1000);
 //}
-=======
-});
->>>>>>> c017ade7566c2206ce09d0e2410b9bf3e896b1f6
